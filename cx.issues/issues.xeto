@@ -1,16 +1,29 @@
-// Lifecycle status of a commissioning issue
+// Lifecycle status of a commissioning issue:
+// open -> inProgress -> workCompleted -> inReview -> closed
+// (+ cancelled / deferred edge states). Who owes the next action is
+// carried separately by ballInCourt, not by splitting states.
 CxIssueStatus: Choice
 
+// Raised, not yet addressed
 CxIssueOpen: CxIssueStatus { issueOpen }
+
+// Being worked by the responsible party
 CxIssueInProgress: CxIssueStatus { issueInProgress }
 
-// Fixed, awaiting verification
-CxIssueResolved: CxIssueStatus { issueResolved }
+// Responsible party claims fixed — awaiting verification
+CxIssueWorkCompleted: CxIssueStatus { issueWorkCompleted }
+
+// With the CxA / owner for verification and approval
+CxIssueInReview: CxIssueStatus { issueInReview }
 
 // Verified complete
 CxIssueClosed: CxIssueStatus { issueClosed }
 
+// Withdrawn or invalid
 CxIssueCancelled: CxIssueStatus { issueCancelled }
+
+// Parked for a later phase or season
+CxIssueDeferred: CxIssueStatus { issueDeferred }
 
 // Urgency of an issue or observation
 CxIssuePriority: Choice
@@ -72,11 +85,12 @@ CxIssue: Dict {
   priority: CxIssuePriority?
   status: CxIssueStatus
   assignedRole: CxRole?
+  ballInCourt: CxRole?           // who owes the next action (approval nuance lives here, not in extra states)
   requirementRef: Ref?           // of: cx.requirements::Requirement
   sourceType: CxIssueSource?
   sourceRef: Ref?                // record that raised this issue
   createdAt: DateTime?
-  resolvedAt: DateTime?
+  workCompletedAt: DateTime?
   closedAt: DateTime?
 }
 
