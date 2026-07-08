@@ -3,10 +3,11 @@ pragma: Lib <
   version: "0.1.0"
   depends: {
     { lib: "sys" }
-    { lib: "ph" }
+    { lib: "hx" }
   }
   org: {
     dis: "Open Cx Ontology (stewarded by kW Engineering)"
     uri: "https://github.com/kW-Labs/xeto-cx"
   }
+  hxSysOnly
 >
