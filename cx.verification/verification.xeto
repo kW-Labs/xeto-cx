@@ -1,0 +1,173 @@
+// Status of a verification activity instance
+CxActivityStatus: Choice
+
+CxActivityPending: CxActivityStatus { activityPending }
+CxActivityInProgress: CxActivityStatus { activityInProgress }
+CxActivityPassed: CxActivityStatus { activityPassed }
+CxActivityFailed: CxActivityStatus { activityFailed }
+CxActivityDeferred: CxActivityStatus { activityDeferred }
+
+// Response state of an individual checklist item
+CxItemStatus: Choice
+
+CxItemPending: CxItemStatus { itemPending }
+CxItemPass: CxItemStatus { itemPass }
+CxItemFail: CxItemStatus { itemFail }
+CxItemNa: CxItemStatus { itemNa }
+
+// How a checklist item is answered
+ChecklistAnswerType: Choice
+
+// Standard yes / no / n-a response
+AnswerYesNoNa: ChecklistAnswerType { answerYesNoNa }
+
+// Section header — groups related items
+AnswerSection: ChecklistAnswerType { answerSection }
+
+// Subsection header
+AnswerSubsection: ChecklistAnswerType { answerSubsection }
+
+// Measured value entry
+AnswerReading: ChecklistAnswerType { answerReading }
+
+// Free-text entry
+AnswerText: ChecklistAnswerType { answerText }
+
+// Base type for everything that proves equipment or systems are acceptable.
+// Subject scoping: an activity is about at least one of equipRef, systemRef,
+// spaceRef, or siteRef (app-level invariant — commissioning covers systems,
+// envelope, and whole-building work, not only equipment). requirementRefs is
+// the traceability edge back to the OPR: an activity states precisely which
+// requirements it verifies.
+VerificationActivity: Dict {
+  verificationActivity
+  dis: Str?
+  cxProjectRef: Ref              // of: cx::CxProject
+  siteRef: Ref?
+  equipRef: Ref?
+  systemRef: Ref?
+  spaceRef: Ref?
+  phase: CxPhase?
+  status: CxActivityStatus?
+  completionPct: Number?
+  disciplines: CxDiscipline? <multiChoice>
+  requirementRefs: List?         // of: Ref
+  notes: Str?
+}
+
+// General field observation report (FOR) — objective, systems reviewed,
+// and any number of Observation records (cx.issues) pointing back via
+// activityRef
+FieldObservation: VerificationActivity {
+  fieldObservation
+  objective: Str?
+  systemsReviewed: Str?
+}
+
+// Multi-discipline installation verification checklist instance
+InstallChecklist: VerificationActivity {
+  installChecklist
+  templateRef: Ref?              // of: ChecklistTemplate
+}
+
+// Pre-verification test — contractor-fillable copy of a test script,
+// answer-permission scoped to the assigned contractor
+PvtTest: VerificationActivity {
+  pvtTest
+  scriptRef: Ref?                // of: TestScript
+  assignedRole: CxRole?
+}
+
+// Functional performance test — CxA-witnessed demonstration of performance
+FptTest: VerificationActivity {
+  fptTest
+  scriptRef: Ref?                // of: TestScript
+}
+
+// Specification-driven contractor test (duct pressure, hydronic pressure,
+// fill/flush/clean, chlorination, NETA, megger, ...) with plan-submitted
+// and results-submitted gates
+ContractorTest: VerificationActivity {
+  contractorTest
+  testType: Str?
+  planSubmitted: Marker?
+  planApprovedBy: Ref?           // of: Attestation
+  resultsSubmitted: Marker?
+  resultsApprovedBy: Ref?        // of: Attestation
+}
+
+// Manufacturer/contractor equipment start-up with committed procedure and
+// completed-report gates
+StartUp: VerificationActivity {
+  startUp
+  procedureCommitted: Marker?
+  startUpComplete: Marker?
+}
+
+// Testing, adjusting, and balancing verification
+TabTest: VerificationActivity {
+  tabTest
+}
+
+// Reusable checklist definition for an equipment type and phase. Items are
+// separate flat ChecklistItemDef records pointing back via templateRef.
+ChecklistTemplate: Dict {
+  checklistTemplate
+  dis: Str
+  phase: CxPhase
+  targetSpec: Str?               // equipment spec qname this applies to, e.g. "ph::Ahu"
+  version: Str?
+  sourceDoc: Str?                // provenance, e.g. "ASHRAE Guideline 0"
+}
+
+// One item within a checklist template
+ChecklistItemDef: Dict {
+  checklistItemDef
+  templateRef: Ref               // of: ChecklistTemplate
+  itemId: Str                    // unique within template
+  label: Str
+  answerType: ChecklistAnswerType
+  role: CxRole?
+  disciplines: CxDiscipline? <multiChoice>
+  requirementRefs: List?         // of: Ref
+  requiresPhoto: Marker?
+  requiresReading: Marker?
+  readingUnit: Str?
+  readingMin: Number?
+  readingMax: Number?
+  sortOrder: Number?
+}
+
+// Reusable test script (PVT / FPT) for an equipment type or system. Steps
+// are separate flat TestStepDef records pointing back via scriptRef.
+TestScript: Dict {
+  testScript
+  dis: Str
+  phase: CxPhase
+  targetSpec: Str?
+  version: Str?
+}
+
+// One step within a test script
+TestStepDef: Dict {
+  testStepDef
+  scriptRef: Ref                 // of: TestScript
+  stepId: Str
+  instruction: Str               // what to do
+  expected: Str?                 // expected result
+  requirementRefs: List?         // of: Ref
+  sortOrder: Number?
+}
+
+// Human signoff with evidence — the attestation-plane primitive, shared by
+// checklists, tests, training, and OPR/BOD signoff. Immutable once created:
+// re-signing appends a new Attestation, the old one stays for audit.
+Attestation: Dict {
+  attestation
+  subjectRef: Ref                // what is attested: activity, Opr, Bod, training, ...
+  role: CxRole
+  userName: Str?
+  signedAt: DateTime
+  evidenceRef: Ref?              // signature image or supporting document
+  notes: Str?
+}

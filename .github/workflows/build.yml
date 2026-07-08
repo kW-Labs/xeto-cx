@@ -1,0 +1,70 @@
+name: Build Xetolibs
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Install Haxall 4.0.5
+        run: |
+          curl -fsSL -o haxall.zip https://github.com/haxall/haxall/releases/download/v4.0.5/haxall-4.0.5.zip
+          unzip -q haxall.zip
+          mv haxall-4.0.5 haxall
+          chmod -R +x haxall/bin
+
+      - name: Copy libs into haxall/src/xeto
+        run: |
+          mkdir -p haxall/src/xeto
+          for d in cx cx.requirements cx.verification cx.issues cx.content; do
+            cp -r "$d" "haxall/src/xeto/$d"
+          done
+          ls haxall/src/xeto/
+
+      - name: Build xetolibs
+        env:
+          FAN_HOME: ${{ github.workspace }}/haxall
+        run: |
+          export PATH="${{ github.workspace }}/haxall/bin:$PATH"
+          xeto build cx cx.requirements cx.verification cx.issues cx.content 2>&1 | tee build.log
+          if grep -q "^ERROR:" build.log; then
+            echo "::error::xeto build reported errors"
+            exit 1
+          fi
+
+      - name: Verify all 5 xetolibs were built
+        run: |
+          MISSING=""
+          for lib in cx cx.requirements cx.verification cx.issues cx.content; do
+            if ! ls haxall/lib/xeto/$lib/$lib-*.xetolib 1>/dev/null 2>&1; then
+              MISSING="$MISSING $lib"
+            fi
+          done
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing xetolibs:$MISSING"
+            exit 1
+          fi
+          echo "All 5 xetolibs built successfully"
+
+      - name: Upload xetolib artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: xetolibs
+          path: haxall/lib/xeto/cx*/*.xetolib
+          if-no-files-found: error

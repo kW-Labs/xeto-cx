@@ -1,0 +1,147 @@
+// Lifecycle status of an OPR or BOD document version
+CxDocStatus: Choice
+
+// Being authored, freely editable
+CxDocDraft: CxDocStatus { docDraft }
+
+// Version stamped; machine-checkable criteria compiled
+CxDocPublished: CxDocStatus { docPublished }
+
+// Attested by owner/CxA; immutable
+CxDocSignedOff: CxDocStatus { docSignedOff }
+
+// Replaced by a later version
+CxDocSuperseded: CxDocStatus { docSuperseded }
+
+// Whether a requirement is contractually binding or aspirational
+RequirementPriority: Choice
+
+ReqRequired: RequirementPriority { reqRequired }
+ReqPreferred: RequirementPriority { reqPreferred }
+
+// Designer's disposition of a requirement in the BOD
+BodResponseStatus: Choice
+
+// Response drafted, awaiting review
+ResponseProposed: BodResponseStatus { responseProposed }
+
+// Owner/CxA accepted the design response
+ResponseAccepted: BodResponseStatus { responseAccepted }
+
+// Design takes documented exception to the requirement
+ResponseException: BodResponseStatus { responseException }
+
+// Owner's Project Requirements — versioned document root. One current
+// version per project; prior versions are immutable once signed. The
+// narrative prose is always preserved: structured requirements are the
+// machine-readable projection of the document the owner signs, never a
+// replacement for it.
+Opr: Dict {
+  opr
+  dis: Str
+  cxProjectRef: Ref            // of: cx::CxProject
+  siteRef: Ref                 // of: ph::Site
+  version: Str                 // monotonic, stamped on publish (e.g. "1.2")
+  status: CxDocStatus
+  publishedAt: DateTime?
+  narrative: Str?              // owner intent prose for the document as a whole
+}
+
+// One owner requirement — the atomic unit of the commissioning contract.
+// Scoping: class scoping via spec qnames (targetSpec/systemSpec/spaceSpec)
+// covers every instance of a type including subtypes via nominal typing;
+// targetRefs pins explicit instances. A requirement applies to the union
+// of whatever scope fields are set. Criteria are separate flat records
+// (SpecConstraint / PerformanceCriterion / ProcessRequirement) that point
+// back via requirementRef.
+Requirement: Dict {
+  requirement
+  dis: Str
+  oprRef: Ref                  // of: Opr — the version that owns this requirement
+  reqId: Str                   // human-stable id, e.g. "OPR-3.2.1" — survives versioning
+  category: Str?               // e.g. energy, comfort, iaq, resilience, om
+  narrative: Str               // the requirement as the owner reads it
+  plane: VerificationPlane
+  priority: RequirementPriority?
+  phases: CxPhase? <multiChoice>   // phases in which this requirement is verified
+  siteRef: Ref?                // scope: site
+  targetSpec: Str?             // scope: equipment spec qname, e.g. "ph::Ahu"
+  targetRefs: List?            // of: Ref — scope: explicit instances
+  systemSpec: Str?             // scope: system spec qname
+  spaceSpec: Str?              // scope: space spec qname
+  supersedesRef: Ref?          // of: Requirement — version lineage
+}
+
+// Conformance-plane criterion. Deliberately xeto-native: these fields ARE
+// xeto's own constraint vocabulary, which is what makes mechanical
+// compilation of a requirement into a validatable xeto spec possible.
+SpecConstraint: Dict {
+  specConstraint
+  requirementRef: Ref          // of: Requirement
+  slot: Str                    // slot on the scoped spec, e.g. "designAirflow"
+  constraintType: Str?         // slot value must fit this type/spec qname
+  minVal: Number?
+  maxVal: Number?
+  fixedVal: Obj?               // exact required value
+  unit: Str?
+  requiredMarker: Str?         // marker that must be present, e.g. "heatRecovery"
+  required: Marker?            // slot must be non-null (non-Maybe in compiled spec)
+}
+
+// Performance-plane criterion, evaluated against telemetry over a span
+// rather than against static records.
+PerformanceCriterion: Dict {
+  performanceCriterion
+  requirementRef: Ref          // of: Requirement
+  pointSpec: Str?              // point spec qname, e.g. "ph.points::DischargeAirTempSensor"
+  pointRefs: List?             // of: Ref — explicit points
+  minVal: Number?
+  maxVal: Number?
+  targetVal: Number?
+  tolerance: Number?
+  unit: Str?
+  adherenceTarget: Number?     // required percent of time in range, e.g. 95
+  evalSpan: Str?               // e.g. "30day rolling", "occupied hours"
+  verificationMode: VerificationMode?
+}
+
+// Attestation-plane criterion: a deliverable or action a human must
+// complete and sign for.
+ProcessRequirement: Dict {
+  processRequirement
+  requirementRef: Ref          // of: Requirement
+  deliverableType: Str?        // e.g. training, omManual, warrantyLetter, cert
+  gatePhase: CxPhase?          // phase gate this requirement blocks
+  attestingRole: CxRole?       // who signs
+}
+
+// Basis of Design — the designer's response document, versioned like the OPR
+Bod: Dict {
+  bod
+  dis: Str
+  cxProjectRef: Ref            // of: cx::CxProject
+  siteRef: Ref                 // of: ph::Site
+  version: Str
+  status: CxDocStatus
+  publishedAt: DateTime?
+}
+
+// The designer's response to a single requirement — the first edge of the
+// traceability spine
+BodResponse: Dict {
+  bodResponse
+  bodRef: Ref                  // of: Bod
+  requirementRef: Ref          // of: Requirement
+  response: Str                // how the design satisfies the requirement
+  status: BodResponseStatus
+}
+
+// Design review finding, threaded against the requirements it affects
+DesignReviewComment: Dict {
+  designReviewComment
+  cxProjectRef: Ref            // of: cx::CxProject
+  requirementRefs: List?       // of: Ref
+  phase: CxPhase
+  comment: Str
+  disposition: Str?            // open, resolved, withdrawn
+}

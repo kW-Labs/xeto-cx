@@ -1,0 +1,99 @@
+// Lifecycle status of a commissioning issue
+CxIssueStatus: Choice
+
+CxIssueOpen: CxIssueStatus { issueOpen }
+CxIssueInProgress: CxIssueStatus { issueInProgress }
+
+// Fixed, awaiting verification
+CxIssueResolved: CxIssueStatus { issueResolved }
+
+// Verified complete
+CxIssueClosed: CxIssueStatus { issueClosed }
+
+CxIssueCancelled: CxIssueStatus { issueCancelled }
+
+// Urgency of an issue or observation
+CxIssuePriority: Choice
+
+CxPriorityCritical: CxIssuePriority { priorityCritical }
+CxPriorityHigh: CxIssuePriority { priorityHigh }
+CxPriorityMedium: CxIssuePriority { priorityMedium }
+CxPriorityLow: CxIssuePriority { priorityLow }
+
+// Classification of a commissioning deficiency
+CxIssueCategory: Choice
+
+CxCategoryInstallation: CxIssueCategory { installationIssue }
+CxCategoryControls: CxIssueCategory { controlsIssue }
+CxCategoryMechanical: CxIssueCategory { mechanicalIssue }
+CxCategoryElectrical: CxIssueCategory { electricalIssue }
+CxCategoryPlumbing: CxIssueCategory { plumbingIssue }
+CxCategorySafety: CxIssueCategory { safetyIssue }
+CxCategoryDesign: CxIssueCategory { designIssue }
+CxCategoryTab: CxIssueCategory { tabDeficiency }
+CxCategorySubmittal: CxIssueCategory { submittalRejection }
+CxCategoryStartUp: CxIssueCategory { startUpFinding }
+CxCategoryFpt: CxIssueCategory { fptDeficiency }
+CxCategoryMeeting: CxIssueCategory { meetingActionItem }
+CxCategoryAnalytics: CxIssueCategory { analyticsFault }
+CxCategoryOther: CxIssueCategory { otherIssue }
+
+// How an issue was created
+CxIssueSource: Choice
+
+// Created directly by a user
+CxSourceManual: CxIssueSource { sourceManual }
+
+// Auto-created from a checklist item failure
+CxSourceChecklist: CxIssueSource { sourceChecklist }
+
+// Raised during PVT / FPT / contractor testing
+CxSourceTest: CxIssueSource { sourceTest }
+
+// Escalated from a field observation
+CxSourceObservation: CxIssueSource { sourceObservation }
+
+// Raised by analytics / fault detection
+CxSourceAnalytics: CxIssueSource { sourceAnalytics }
+
+// Commissioning deficiency or punch-list item. requirementRef closes the
+// traceability loop: a deficiency can state which OPR requirement it
+// violates.
+CxIssue: Dict {
+  cxIssue
+  dis: Str                       // brief summary
+  cxProjectRef: Ref?             // of: cx::CxProject
+  siteRef: Ref
+  equipRef: Ref?
+  systemRef: Ref?
+  spaceRef: Ref?
+  description: Str?
+  category: CxIssueCategory?
+  priority: CxIssuePriority?
+  status: CxIssueStatus
+  assignedRole: CxRole?
+  requirementRef: Ref?           // of: cx.requirements::Requirement
+  sourceType: CxIssueSource?
+  sourceRef: Ref?                // record that raised this issue
+  createdAt: DateTime?
+  resolvedAt: DateTime?
+  closedAt: DateTime?
+}
+
+// Individual finding captured during a site visit or field observation.
+// Lighter than an issue; escalates to one via issueRef when action is
+// required.
+Observation: Dict {
+  observation
+  dis: Str
+  cxProjectRef: Ref?             // of: cx::CxProject
+  siteRef: Ref
+  activityRef: Ref?              // of: cx.verification::FieldObservation
+  equipRef: Ref?
+  spaceRef: Ref?
+  description: Str
+  recommendedAction: Str?
+  priority: CxIssuePriority?
+  issueRef: Ref?                 // of: CxIssue — set when escalated
+  reportedAt: DateTime?
+}

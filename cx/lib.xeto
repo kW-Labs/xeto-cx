@@ -1,0 +1,12 @@
+pragma: Lib <
+  doc: "Open commissioning ontology — root vocabulary: phases, roles, disciplines, verification planes and modes, and the Cx project entity. Candidate for contribution to Project Haystack as ph.cx."
+  version: "0.1.0"
+  depends: {
+    { lib: "sys" }
+    { lib: "ph" }
+  }
+  org: {
+    dis: "Open Cx Ontology (stewarded by kW Engineering)"
+    uri: "https://github.com/kW-Labs/xeto-cx"
+  }
+>

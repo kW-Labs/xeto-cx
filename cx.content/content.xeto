@@ -1,0 +1,292 @@
+//
+// Example project + OPR — demonstrates the requirement model and the three
+// verification planes. Values are illustrative.
+//
+
+@ex-project: CxProject {
+  dis: "Example Office Building Cx"
+  siteRef: @ex-site
+  designPhase
+}
+
+@ex-site: Dict {
+  dis: "Example Office Building"
+}
+
+@ex-opr: Opr {
+  dis: "Example OPR v1.0"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  version: "1.0"
+  docPublished
+  narrative: "The owner requires an energy-efficient, comfortable, maintainable facility commissioned per ASHRAE Guideline 0."
+}
+
+// ── Conformance-plane requirements — machine-checked via fits() ──────────
+
+@ex-req-ahu-hr: Requirement {
+  dis: "AHU heat recovery"
+  oprRef: @ex-opr
+  reqId: "OPR-3.1.1"
+  category: "energy"
+  narrative: "All air handling units serving more than 5,000 cfm outdoor air shall include exhaust air heat recovery."
+  conformancePlane
+  reqRequired
+  targetSpec: "ph::Ahu"
+}
+
+@ex-req-ahu-hr-c: SpecConstraint {
+  requirementRef: @ex-req-ahu-hr
+  slot: "heatRecovery"
+  requiredMarker: "heatRecovery"
+}
+
+@ex-req-chw-dt: Requirement {
+  dis: "Chilled water design delta-T"
+  oprRef: @ex-opr
+  reqId: "OPR-3.2.1"
+  category: "energy"
+  narrative: "Chilled water systems shall be designed for a minimum 12 degF delta-T at design load."
+  conformancePlane
+  reqRequired
+  targetSpec: "ph::Chiller"
+}
+
+@ex-req-chw-dt-c: SpecConstraint {
+  requirementRef: @ex-req-chw-dt
+  slot: "designDeltaT"
+  minVal: 12
+  unit: "Δ°F"
+}
+
+// ── Performance-plane requirements — evaluated against telemetry ─────────
+
+@ex-req-space-temp: Requirement {
+  dis: "Space temperature compliance"
+  oprRef: @ex-opr
+  reqId: "OPR-4.1.1"
+  category: "comfort"
+  narrative: "Occupied spaces shall maintain 70-74 degF during occupied hours at 95 percent adherence."
+  performancePlane
+  reqRequired
+  spaceSpec: "ph::Space"
+}
+
+@ex-req-space-temp-c: PerformanceCriterion {
+  requirementRef: @ex-req-space-temp
+  pointSpec: "ph::Point"
+  minVal: 70
+  maxVal: 74
+  unit: "°F"
+  adherenceTarget: 95
+  evalSpan: "occupied hours, 30day rolling"
+  autoMode
+}
+
+// ── Attestation-plane requirements — human signoff with evidence ─────────
+
+@ex-req-training: Requirement {
+  dis: "Operator training on BAS"
+  oprRef: @ex-opr
+  reqId: "OPR-5.1.1"
+  category: "om"
+  narrative: "Facility operations staff shall receive a minimum of 8 hours of hands-on training on the building automation system prior to turnover."
+  attestationPlane
+  reqRequired
+}
+
+@ex-req-training-c: ProcessRequirement {
+  requirementRef: @ex-req-training
+  deliverableType: "training"
+  turnoverPhase
+  facilityManagerRole
+}
+
+//
+// Example AHU installation checklist — representative subset of a full
+// kW Engineering installation checklist, illustrating section structure,
+// multi-discipline assignment, and role tagging.
+//
+
+@ex-ahu-install: ChecklistTemplate {
+  dis: "Air Handling Unit — Installation Verification"
+  installationPhase
+  targetSpec: "ph::Ahu"
+  version: "1.0"
+}
+
+@ex-ahu-i01: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i01"
+  label: "General Installation"
+  answerSection
+  sortOrder: 1
+}
+
+@ex-ahu-i02: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i02"
+  label: "Attach photo of equipment nameplate."
+  answerYesNoNa
+  mechanicalRole
+  requiresPhoto
+  sortOrder: 2
+}
+
+@ex-ahu-i03: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i03"
+  label: "Unit has been installed per manufacturer installation instructions."
+  answerYesNoNa
+  mechanicalRole
+  sortOrder: 3
+}
+
+@ex-ahu-i04: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i04"
+  label: "Unit is securely fastened to the structure with required seismic restraints installed."
+  answerYesNoNa
+  mechanicalRole
+  sortOrder: 4
+}
+
+@ex-ahu-i05: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i05"
+  label: "Mechanical — Sheet Metal"
+  answerSection
+  sortOrder: 5
+}
+
+@ex-ahu-i06: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i06"
+  label: "Unit dampers operate freely and close tightly."
+  answerYesNoNa
+  sheetMetalRole
+  sortOrder: 6
+}
+
+@ex-ahu-i07: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i07"
+  label: "Construction filters have been removed and new, clean filters have been installed."
+  answerYesNoNa
+  sheetMetalRole
+  sortOrder: 7
+}
+
+@ex-ahu-i08: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i08"
+  label: "Drain pans slope to drain and drain properly."
+  answerYesNoNa
+  sheetMetalRole
+  sortOrder: 8
+}
+
+@ex-ahu-i09: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i09"
+  label: "Electrical"
+  answerSection
+  sortOrder: 9
+}
+
+@ex-ahu-i10: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i10"
+  label: "Electric connections tight and proper grounding installed for components and unit."
+  answerYesNoNa
+  electricalRole
+  sortOrder: 10
+}
+
+@ex-ahu-i11: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i11"
+  label: "Disconnect removes all power to the unit when in the OFF position. All electrical safeties operable."
+  answerYesNoNa
+  electricalRole
+  sortOrder: 11
+}
+
+@ex-ahu-i12: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i12"
+  label: "Controls"
+  answerSection
+  sortOrder: 12
+}
+
+@ex-ahu-i13: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i13"
+  label: "All DDC I/O points are wired, programmed, generated in graphics and integrated at the front-end computer."
+  answerYesNoNa
+  controlsRole
+  sortOrder: 13
+}
+
+@ex-ahu-i14: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i14"
+  label: "All sensors calibrated and labeled."
+  answerYesNoNa
+  controlsRole
+  sortOrder: 14
+}
+
+@ex-ahu-i15: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i15"
+  label: "Commissioning Agent"
+  answerSection
+  sortOrder: 15
+}
+
+@ex-ahu-i16: ChecklistItemDef {
+  templateRef: @ex-ahu-install
+  itemId: "i16"
+  label: "Maintenance access acceptable for unit and components."
+  answerYesNoNa
+  cxaRole
+  sortOrder: 16
+}
+
+//
+// Example FPT script — economizer functional test excerpt, linked back to
+// the OPR heat-recovery requirement to demonstrate traceability.
+//
+
+@ex-ahu-fpt: TestScript {
+  dis: "AHU Functional Performance Test — Economizer and Heat Recovery"
+  fptPhase
+  targetSpec: "ph::Ahu"
+  version: "1.0"
+}
+
+@ex-fpt-s01: TestStepDef {
+  scriptRef: @ex-ahu-fpt
+  stepId: "s01"
+  instruction: "Command outdoor air temperature input below economizer high limit. Verify economizer modulates open."
+  expected: "OA damper modulates toward 100 percent; mechanical cooling holds off."
+  sortOrder: 1
+}
+
+@ex-fpt-s02: TestStepDef {
+  scriptRef: @ex-ahu-fpt
+  stepId: "s02"
+  instruction: "With unit in minimum outdoor air, verify heat recovery wheel is rotating and recovering exhaust energy."
+  expected: "Wheel rotates; exhaust-side and supply-side temperature differentials consistent with recovery."
+  sortOrder: 2
+}
+
+@ex-fpt-s03: TestStepDef {
+  scriptRef: @ex-ahu-fpt
+  stepId: "s03"
+  instruction: "Restore all overrides and return unit to normal automatic operation."
+  expected: "Unit returns to scheduled operation with no active alarms."
+  sortOrder: 3
+}

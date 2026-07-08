@@ -1,0 +1,12 @@
+pragma: Lib <
+  doc: "Open commissioning ontology — OPR/BOD contract layer: requirements, acceptance criteria, and the traceability spine (OPR requirement -> BOD response -> design review -> verification -> acceptance). Candidate for contribution to Project Haystack as ph.cx."
+  version: "0.1.0"
+  depends: {
+    { lib: "sys" }
+    { lib: "cx" }
+  }
+  org: {
+    dis: "Open Cx Ontology (stewarded by kW Engineering)"
+    uri: "https://github.com/kW-Labs/xeto-cx"
+  }
+>

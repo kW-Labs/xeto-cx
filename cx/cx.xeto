@@ -1,0 +1,191 @@
+// Commissioning phase of a Cx project. Default set follows the ASHRAE
+// Guideline 0 / Standard 202 process arc. Projects may extend this choice
+// with delivery-method-specific phases via normal xeto subtyping.
+CxPhase: Choice
+
+// OPR / BOD development and design reviews
+CxPhaseDesign: CxPhase { designPhase }
+
+// Equipment submittal review
+CxPhaseSubmittal: CxPhase { submittalPhase }
+
+// Installation verification
+CxPhaseInstallation: CxPhase { installationPhase }
+
+// Pre-verification testing (contractor-executed)
+CxPhasePvt: CxPhase { pvtPhase }
+
+// Functional performance testing (CxA-witnessed)
+CxPhaseFpt: CxPhase { fptPhase }
+
+// Owner training
+CxPhaseTraining: CxPhase { trainingPhase }
+
+// Deliverables and final Cx report
+CxPhaseTurnover: CxPhase { turnoverPhase }
+
+// Warranty period and seasonal testing
+CxPhaseWarranty: CxPhase { warrantyPhase }
+
+// Engagement complete
+CxPhaseClosed: CxPhase { closedPhase }
+
+// Party responsible for a commissioning task, answer, or signoff
+CxRole: Choice
+
+// Commissioning Authority — independent verification and signoff
+CxRoleCxa: CxRole { cxaRole }
+
+// Controls/BAS contractor — DDC, sensors, programming
+CxRoleControls: CxRole { controlsRole }
+
+// Mechanical contractor — piping, equipment installation
+CxRoleMechanical: CxRole { mechanicalRole }
+
+// Sheet metal contractor — ductwork, terminal units
+CxRoleSheetMetal: CxRole { sheetMetalRole }
+
+// Testing, Adjusting, and Balancing contractor
+CxRoleTab: CxRole { tabRole }
+
+// General contractor — overall construction oversight
+CxRoleGc: CxRole { gcRole }
+
+// Electrical contractor — power, lighting
+CxRoleElectrical: CxRole { electricalRole }
+
+// Plumbing contractor — piping, fixtures
+CxRolePlumbing: CxRole { plumbingRole }
+
+// Owner's representative
+CxRoleOwner: CxRole { ownerRole }
+
+// Facility manager or building operator
+CxRoleFacilityManager: CxRole { facilityManagerRole }
+
+// Trade discipline for row-level tagging and filtering of verification work
+CxDiscipline: Choice
+
+CxDisciplineMechanical: CxDiscipline { mechanicalDiscipline }
+CxDisciplineSheetMetal: CxDiscipline { sheetMetalDiscipline }
+CxDisciplineControls: CxDiscipline { controlsDiscipline }
+CxDisciplineElectrical: CxDiscipline { electricalDiscipline }
+CxDisciplinePlumbing: CxDiscipline { plumbingDiscipline }
+CxDisciplineFireProtection: CxDiscipline { fireProtectionDiscipline }
+
+// How a requirement is verified. Every requirement declares exactly one
+// plane so the contract stays honest about its evaluation mechanism.
+VerificationPlane: Choice
+
+// Machine-checked against typed records via fits()
+ConformancePlane: VerificationPlane { conformancePlane }
+
+// Evaluated against telemetry over a span
+PerformancePlane: VerificationPlane { performancePlane }
+
+// Verified by human signoff with evidence
+AttestationPlane: VerificationPlane { attestationPlane }
+
+// How a verification step obtains its actual value
+VerificationMode: Choice
+
+// Automatically verified via BAS / analytics data
+AutoMode: VerificationMode { autoMode }
+
+// Manually verified via checklist or inspection
+ManualMode: VerificationMode { manualMode }
+
+// Prefer automatic, fall back to manual when data unavailable
+HybridMode: VerificationMode { hybridMode }
+
+// Top-level commissioning project — one per Cx engagement
+CxProject: Dict {
+  cxProject
+  dis: Str
+  siteRef: Ref                 // of: ph::Site
+  buildingRef: Ref?
+  phase: CxPhase
+  contractScope: Str?
+  scheduleStart: Date?
+  scheduleEnd: Date?
+  warrantyEnd: Date?
+}
+
+// Abstract base declaring the commissioning entity-marker vocabulary as
+// global slots. Follows the ph architecture: the root lib owns the tag
+// vocabulary, the family libs (cx.requirements, cx.verification, cx.issues)
+// own type specs that apply these markers.
+CxEntity: Dict <abstract> {
+
+  // Top-level commissioning project
+  *cxProject: Marker
+
+  // Owner's Project Requirements document
+  *opr: Marker
+
+  // One owner requirement — atomic unit of the Cx contract
+  *requirement: Marker
+
+  // Conformance-plane criterion (xeto-native constraint)
+  *specConstraint: Marker
+
+  // Performance-plane criterion (telemetry evaluation)
+  *performanceCriterion: Marker
+
+  // Attestation-plane criterion (human deliverable)
+  *processRequirement: Marker
+
+  // Basis of Design document
+  *bod: Marker
+
+  // Designer response to a requirement
+  *bodResponse: Marker
+
+  // Design review finding
+  *designReviewComment: Marker
+
+  // Base marker for all verification activities
+  *verificationActivity: Marker
+
+  // Field observation report activity
+  *fieldObservation: Marker
+
+  // Installation checklist activity
+  *installChecklist: Marker
+
+  // Pre-verification test activity
+  *pvtTest: Marker
+
+  // Functional performance test activity
+  *fptTest: Marker
+
+  // Specification-driven contractor test activity
+  *contractorTest: Marker
+
+  // Equipment start-up activity
+  *startUp: Marker
+
+  // Testing, adjusting, and balancing activity
+  *tabTest: Marker
+
+  // Reusable checklist definition
+  *checklistTemplate: Marker
+
+  // Item within a checklist template
+  *checklistItemDef: Marker
+
+  // Reusable test script definition
+  *testScript: Marker
+
+  // Step within a test script
+  *testStepDef: Marker
+
+  // Human signoff with evidence
+  *attestation: Marker
+
+  // Commissioning deficiency
+  *cxIssue: Marker
+
+  // Field finding, lighter than an issue
+  *observation: Marker
+}

@@ -1,0 +1,12 @@
+pragma: Lib <
+  doc: "Open commissioning ontology — verification activities: checklists, tests, start-ups, TAB, field observations, and attestations. Process/workflow layer, separable from the requirements core."
+  version: "0.1.0"
+  depends: {
+    { lib: "sys" }
+    { lib: "cx" }
+  }
+  org: {
+    dis: "Open Cx Ontology (stewarded by kW Engineering)"
+    uri: "https://github.com/kW-Labs/xeto-cx"
+  }
+>

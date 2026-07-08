@@ -1,0 +1,14 @@
+pragma: Lib <
+  doc: "Open commissioning ontology — seed reference content as instance data: an example OPR requirement set across all three verification planes, an AHU installation checklist, and an FPT script. Illustrative, not a complete content library."
+  version: "0.1.0"
+  depends: {
+    { lib: "sys" }
+    { lib: "cx" }
+    { lib: "cx.requirements" }
+    { lib: "cx.verification" }
+  }
+  org: {
+    dis: "Open Cx Ontology (stewarded by kW Engineering)"
+    uri: "https://github.com/kW-Labs/xeto-cx"
+  }
+>
