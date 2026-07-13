@@ -47,7 +47,7 @@ Standard 202 records verification in reports written at moments in time.
 But its own definition of Ongoing Cx is continuous re-verification — and
 a check that re-runs needs somewhere to write its answer. `VerificationResult`
 is that record: one check run, append-only, with a three-way outcome.
-`inconclusive` is deliberate: an honest contract never conflates "no
+`outcomeInconclusive` is deliberate: an honest contract never conflates "no
 data" with either "passed" or "failed". Failing results feed the existing
 issue machinery (`CxIssue` with `sourceRef`); how a tool schedules checks
 or gates phases on results is application behavior, out of ontology scope.

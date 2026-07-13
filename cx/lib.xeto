@@ -1,5 +1,5 @@
 pragma: Lib <
-  doc: "Open commissioning ontology — root vocabulary: phases, roles, disciplines, verification planes and modes, and the Cx project entity, the Standard 202 document taxonomy (CxDoc), and the OcxProgram entity. Candidate for contribution to Project Haystack as ph.cx."
+  doc: "Open commissioning ontology — root vocabulary: phases, roles, disciplines, verification planes and modes, the Cx project entity, the Standard 202 document taxonomy (CxDoc), and the OcxProgram entity. Candidate for contribution to Project Haystack as ph.cx."
   version: "0.2.0"
   depends: {
     { lib: "sys" }

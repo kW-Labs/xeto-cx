@@ -34,7 +34,7 @@ not (yet) affiliated with Project Haystack.
 | `cx.requirements` | OPR/CFR/BOD document structures, Requirement, acceptance criteria, variance records, and the traceability spine | ph.cx candidate |
 | `cx.verification` | Verification activities: checklists, PVT/FPT test scripts, contractor testing, start-ups, TAB, field observations, attestations | community-open |
 | `cx.issues` | Deficiency + field-observation interchange shapes | community-open |
-| `cx.content` | Seed reference content as instance data: an example OPR requirement set, an AHU installation checklist, an FPT script | illustrative only |
+| `cx.content` | Seed reference content as instance data: an example OPR requirement set, an AHU installation checklist, an FPT script, and an EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual) | illustrative only |
 
 ## The three verification planes
 
@@ -57,12 +57,12 @@ which owns it, so the same requirement (and its verification criteria)
 survives from design intent to operating contract. `OcxProgram` anchors
 continuous verification against the current CFR, and every check —
 machine or human — writes a `VerificationResult` with a three-way
-outcome: `pass`, `fail`, or `inconclusive`, because an honest record
+outcome: `outcomePass`, `outcomeFail`, or `outcomeInconclusive`, because an honest record
 never reports "no data" as either compliance or violation. When the
 owner formally accepts performance at variance with a requirement
 (Standard 202 Appendix O), a `RequirementVariance` record preserves the
-amendment trail. The Systems Manual, which Appendix L builds from
-"final copies" of project documents, becomes an index of references to
+amendment trail. The Systems Manual, which Appendix L assembles by
+inserting final copies of project documents, becomes an index of references to
 the living records instead.
 
 ## The traceability spine

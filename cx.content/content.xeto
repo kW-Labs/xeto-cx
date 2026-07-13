@@ -299,6 +299,7 @@
 // 202 Foreword transitions (OPR -> CFR, Cx Plan -> OCx Plan), continuous
 // verification results on all three outcomes, an owner-accepted variance
 // (202 Appendix O), and the Systems Manual as an index of living records.
+// The project record above is shown at its design-phase snapshot.
 //
 
 // ── OPR transitions to CFR; a failing requirement is amended ─────────────
@@ -317,6 +318,7 @@
   siteRef: @ex-site
   version: "1.1"
   docPublished
+  publishedAt: DateTime "2026-07-08T12:00:00-06:00 Denver"
   narrative: "Amended after owner accepted a seasonal space-temperature variance (see variance record)."
   sourceOprRefs: { @ex-opr }
 }

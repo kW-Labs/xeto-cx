@@ -119,15 +119,13 @@ ProcessRequirement: Dict {
   attestingRole: CxRole?       // who signs
 }
 
-// Basis of Design — the designer's response document, versioned like the OPR
-Bod: Dict {
+// Basis of Design — the designer's response document (202 section 3),
+// versioned like the OPR and CFR
+Bod: CxDoc {
   bod
-  dis: Str
   cxProjectRef: Ref            // of: cx::CxProject
-  siteRef: Ref                 // of: ph::Site
-  version: Str
-  status: CxDocStatus
-  publishedAt: DateTime?
+  version: Str                 // tightened from CxDoc: contract docs are always versioned
+  status: CxDocStatus          // tightened from CxDoc: contract docs always carry lifecycle state
 }
 
 // The designer's response to a single requirement — the first edge of the
@@ -162,7 +160,7 @@ RequirementVariance: Dict {
   requirementVariance
   requirementRef: Ref          // of: Requirement
   description: Str             // the accepted deviation
-  impacts: Str?                // documented environmental, health, comfort, energy, O&M impacts
+  impacts: Str?                // documented environmental, health, safety, comfort, energy, and O&M cost impacts
   permanent: Marker?           // accepted permanently; otherwise time-bound
   expiresAt: Date?             // when a time-bound variance lapses
   sourceIssueRef: Ref?         // of: cx.issues::CxIssue — issue whose acceptance created this
