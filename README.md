@@ -107,7 +107,7 @@ CI compiles every push with Haxall — see `.github/workflows/build.yml`.
 ## Contributing
 
 Issues and PRs welcome — especially from commissioning providers, building
-owners, and tool vendors. If you
+owners, and tool vendors. Schema conventions are in `CONTRIBUTING.md`. If you
 represent an owner who wants to require open-format commissioning
 deliverables, or a tool that wants to read/write these shapes, open an issue
 — that conversation is the whole point.
