@@ -107,8 +107,8 @@
 
 //
 // Example AHU installation checklist — representative subset of a full
-// kW Engineering installation checklist, illustrating section structure,
-// multi-discipline assignment, and role tagging.
+// commissioning provider installation checklist, illustrating section
+// structure, multi-discipline assignment, and role tagging.
 //
 
 @ex-ahu-install: ChecklistTemplate {
