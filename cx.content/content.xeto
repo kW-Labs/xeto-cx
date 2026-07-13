@@ -26,7 +26,7 @@
 
 @ex-req-ahu-hr: Requirement {
   dis: "AHU heat recovery"
-  oprRef: @ex-opr
+  docRef: @ex-opr
   reqId: "OPR-3.1.1"
   category: "energy"
   narrative: "All air handling units serving more than 5,000 cfm outdoor air shall include exhaust air heat recovery."
@@ -43,7 +43,7 @@
 
 @ex-req-chw-dt: Requirement {
   dis: "Chilled water design delta-T"
-  oprRef: @ex-opr
+  docRef: @ex-opr
   reqId: "OPR-3.2.1"
   category: "energy"
   narrative: "Chilled water systems shall be designed for a minimum 12 degF delta-T at design load."
@@ -63,7 +63,7 @@
 
 @ex-req-space-temp: Requirement {
   dis: "Space temperature compliance"
-  oprRef: @ex-opr
+  docRef: @ex-opr
   reqId: "OPR-4.1.1"
   category: "comfort"
   narrative: "Occupied spaces shall maintain 70-74 degF during occupied hours at 95 percent adherence."
@@ -87,7 +87,7 @@
 
 @ex-req-training: Requirement {
   dis: "Operator training on BAS"
-  oprRef: @ex-opr
+  docRef: @ex-opr
   reqId: "OPR-5.1.1"
   category: "om"
   narrative: "Facility operations staff shall receive a minimum of 8 hours of hands-on training on the building automation system prior to turnover."

@@ -1,18 +1,3 @@
-// Lifecycle status of an OPR or BOD document version
-CxDocStatus: Choice
-
-// Being authored, freely editable
-CxDocDraft: CxDocStatus { docDraft }
-
-// Version stamped; machine-checkable criteria compiled
-CxDocPublished: CxDocStatus { docPublished }
-
-// Attested by owner/CxA; immutable
-CxDocSignedOff: CxDocStatus { docSignedOff }
-
-// Replaced by a later version
-CxDocSuperseded: CxDocStatus { docSuperseded }
-
 // Whether a requirement is contractually binding or aspirational
 RequirementPriority: Choice
 
@@ -31,20 +16,37 @@ ResponseAccepted: BodResponseStatus { responseAccepted }
 // Design takes documented exception to the requirement
 ResponseException: BodResponseStatus { responseException }
 
-// Owner's Project Requirements — versioned document root. One current
-// version per project; prior versions are immutable once signed. The
-// narrative prose is always preserved: structured requirements are the
-// machine-readable projection of the document the owner signs, never a
-// replacement for it.
-Opr: Dict {
-  opr
-  dis: Str
-  cxProjectRef: Ref            // of: cx::CxProject
-  siteRef: Ref                 // of: ph::Site
-  version: Str                 // monotonic, stamped on publish (e.g. "1.2")
-  status: CxDocStatus
-  publishedAt: DateTime?
+// Abstract requirements-document container. The OPR and CFR share this
+// structure: 202 section 3 defines both as documents of requirements and
+// expectations with measurable performance criteria — they differ in
+// anchor (project vs facility) and lifecycle. Requirements reference
+// their container via docRef and never depend on which subtype owns them.
+// The narrative prose is always preserved: structured requirements are
+// the machine-readable projection of the document the owner signs, never
+// a replacement for it.
+RequirementsDoc: CxDoc <abstract> {
+  requirementsDoc
+  version: Str                 // tightened from CxDoc: contract docs are always versioned
+  status: CxDocStatus          // tightened from CxDoc: contract docs always carry lifecycle state
   narrative: Str?              // owner intent prose for the document as a whole
+}
+
+// Owner's Project Requirements — project-anchored requirements document.
+// One current version per project; prior versions immutable once signed.
+Opr: RequirementsDoc {
+  opr
+  cxProjectRef: Ref            // of: cx::CxProject
+}
+
+// Current Facility Requirements — facility-anchored requirements document
+// (202 section 3): the current functional requirements of an existing
+// facility and the expectations for how it is used and operated. Outlives
+// any single project: "the OPR may transition to the CFR" (202 Foreword),
+// and one CFR absorbs requirements from successive project OPRs over the
+// life of the facility.
+Cfr: RequirementsDoc {
+  cfr
+  sourceOprRefs: List?         // of: Ref of Opr — lineage from absorbed OPR versions
 }
 
 // One owner requirement — the atomic unit of the commissioning contract.
@@ -57,7 +59,9 @@ Opr: Dict {
 Requirement: Dict {
   requirement
   dis: Str
-  oprRef: Ref                  // of: Opr — the version that owns this requirement
+  docRef: Ref                  // of: RequirementsDoc — the document version that owns this requirement
+  sourceDocRef: Ref?           // provenance: source document this requirement was extracted from
+  sourcePage: Number?          // provenance: page within sourceDocRef
   reqId: Str                   // human-stable id, e.g. "OPR-3.2.1" — survives versioning
   category: Str?               // e.g. energy, comfort, iaq, resilience, om
   narrative: Str               // the requirement as the owner reads it
@@ -69,7 +73,7 @@ Requirement: Dict {
   targetRefs: List?            // of: Ref — scope: explicit instances
   systemSpec: Str?             // scope: system spec qname
   spaceSpec: Str?              // scope: space spec qname
-  supersedesRef: Ref?          // of: Requirement — version lineage
+  supersedesRef: Ref?          // of: Requirement — version lineage, incl. across the OPR-to-CFR transition
 }
 
 // Conformance-plane criterion. Deliberately xeto-native: these fields ARE
@@ -144,4 +148,24 @@ DesignReviewComment: Dict {
   phase: CxPhase
   comment: Str
   disposition: Str?            // open, resolved, withdrawn
+}
+
+// Owner-accepted variance from a requirement (202 Appendix O): a formal,
+// documented acceptance of performance at variance with the OPR/CFR,
+// either permanent or until correction is scheduled. The contract-
+// amendment primitive: verification treats an active variance as the
+// requirement's operative expectation, and the requirements document is
+// updated to match ("The OPR must be updated to match the revised
+// expectations", App O). Immutable once attested; the variance trail is
+// the amendment history.
+RequirementVariance: Dict {
+  requirementVariance
+  requirementRef: Ref          // of: Requirement
+  description: Str             // the accepted deviation
+  impacts: Str?                // documented environmental, health, comfort, energy, O&M impacts
+  permanent: Marker?           // accepted permanently; otherwise time-bound
+  expiresAt: Date?             // when a time-bound variance lapses
+  sourceIssueRef: Ref?         // of: cx.issues::CxIssue — issue whose acceptance created this
+  attestationRef: Ref?         // of: cx.verification::Attestation — owner signoff
+  acceptedAt: DateTime?
 }

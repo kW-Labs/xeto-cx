@@ -67,7 +67,7 @@ spreadsheet.
 ```xeto
 @opr-3-1-1: Requirement {
   dis: "AHU heat recovery"
-  oprRef: @my-opr
+  docRef: @my-opr
   reqId: "OPR-3.1.1"
   narrative: "All air handling units serving more than 5,000 cfm outdoor air shall include exhaust air heat recovery."
   conformancePlane
