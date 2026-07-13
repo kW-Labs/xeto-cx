@@ -1,6 +1,9 @@
 //
-// Example project + OPR — demonstrates the requirement model and the three
-// verification planes. Values are illustrative.
+// Example project + OPR — demonstrates the requirement model, the three
+// verification planes, and the EBCx continuation: OPR -> CFR transition,
+// ongoing commissioning, verification results, an owner-accepted
+// variance, and the Systems Manual as an index of living records.
+// Values are illustrative.
 //
 
 @ex-project: CxProject {
@@ -18,7 +21,7 @@
   cxProjectRef: @ex-project
   siteRef: @ex-site
   version: "1.0"
-  docPublished
+  docSignedOff
   narrative: "The owner requires an energy-efficient, comfortable, maintainable facility commissioned per ASHRAE Guideline 0."
 }
 
@@ -26,7 +29,7 @@
 
 @ex-req-ahu-hr: Requirement {
   dis: "AHU heat recovery"
-  oprRef: @ex-opr
+  docRef: @ex-opr
   reqId: "OPR-3.1.1"
   category: "energy"
   narrative: "All air handling units serving more than 5,000 cfm outdoor air shall include exhaust air heat recovery."
@@ -43,7 +46,7 @@
 
 @ex-req-chw-dt: Requirement {
   dis: "Chilled water design delta-T"
-  oprRef: @ex-opr
+  docRef: @ex-opr
   reqId: "OPR-3.2.1"
   category: "energy"
   narrative: "Chilled water systems shall be designed for a minimum 12 degF delta-T at design load."
@@ -63,7 +66,7 @@
 
 @ex-req-space-temp: Requirement {
   dis: "Space temperature compliance"
-  oprRef: @ex-opr
+  docRef: @ex-opr
   reqId: "OPR-4.1.1"
   category: "comfort"
   narrative: "Occupied spaces shall maintain 70-74 degF during occupied hours at 95 percent adherence."
@@ -87,7 +90,7 @@
 
 @ex-req-training: Requirement {
   dis: "Operator training on BAS"
-  oprRef: @ex-opr
+  docRef: @ex-opr
   reqId: "OPR-5.1.1"
   category: "om"
   narrative: "Facility operations staff shall receive a minimum of 8 hours of hands-on training on the building automation system prior to turnover."
@@ -104,8 +107,8 @@
 
 //
 // Example AHU installation checklist — representative subset of a full
-// kW Engineering installation checklist, illustrating section structure,
-// multi-discipline assignment, and role tagging.
+// commissioning provider installation checklist, illustrating section
+// structure, multi-discipline assignment, and role tagging.
 //
 
 @ex-ahu-install: ChecklistTemplate {
@@ -289,4 +292,165 @@
   instruction: "Restore all overrides and return unit to normal automatic operation."
   expected: "Unit returns to scheduled operation with no active alarms."
   sortOrder: 3
+}
+
+//
+// EBCx continuation — the same building, after turnover. Demonstrates the
+// 202 Foreword transitions (OPR -> CFR, Cx Plan -> OCx Plan), continuous
+// verification results on all three outcomes, an owner-accepted variance
+// (202 Appendix O), and the Systems Manual as an index of living records.
+// The project record above is shown at its design-phase snapshot.
+//
+
+// ── OPR transitions to CFR; a failing requirement is amended ─────────────
+
+@ex-cfr: Cfr {
+  dis: "Example Facility CFR v1.0"
+  siteRef: @ex-site
+  version: "1.0"
+  docSuperseded
+  narrative: "Current facility requirements carried forward from the project OPR at turnover."
+  sourceOprRefs: { @ex-opr }
+}
+
+@ex-cfr-2: Cfr {
+  dis: "Example Facility CFR v1.1"
+  siteRef: @ex-site
+  version: "1.1"
+  docPublished
+  publishedAt: DateTime "2026-07-08T12:00:00-06:00 Denver"
+  narrative: "Amended after owner accepted a seasonal space-temperature variance (see variance record)."
+  sourceOprRefs: { @ex-opr }
+}
+
+// CFR v1.1 restates the space-temperature requirement at the amended
+// adherence target; supersedesRef preserves lineage across the OPR->CFR
+// transition.
+@ex-req-space-temp-cfr: Requirement {
+  dis: "Space temperature compliance (amended)"
+  docRef: @ex-cfr-2
+  reqId: "CFR-4.1.1"
+  category: "comfort"
+  narrative: "Occupied spaces shall maintain 70-74 degF during occupied hours at 90 percent adherence through 2026-09-30, returning to 95 percent thereafter."
+  performancePlane
+  reqRequired
+  spaceSpec: "ph::Space"
+  supersedesRef: @ex-req-space-temp
+}
+
+@ex-req-space-temp-cfr-c: PerformanceCriterion {
+  requirementRef: @ex-req-space-temp-cfr
+  pointSpec: "ph::Point"
+  minVal: 70
+  maxVal: 74
+  unit: "°F"
+  adherenceTarget: 90
+  evalSpan: "occupied hours, 30day rolling"
+  autoMode
+}
+
+// ── Ongoing commissioning program (202 section 3, "Ongoing Cx") ──────────
+
+@ex-ocx-plan: CxPlan {
+  dis: "Example Facility OCx Plan"
+  siteRef: @ex-site
+  cxProjectRef: @ex-project
+  version: "1.0"
+  docPublished
+}
+
+@ex-ocx: OcxProgram {
+  dis: "Example Facility Ongoing Cx"
+  siteRef: @ex-site
+  cfrRef: @ex-cfr-2
+  planRef: @ex-ocx-plan
+  startedAt: Date "2026-07-01"
+  reviewCadence: "quarterly"
+}
+
+// ── Verification results — one per outcome ───────────────────────────────
+
+// Conformance check: heat-recovery marker present on every scoped AHU
+@ex-vr-pass: VerificationResult {
+  requirementRef: @ex-req-ahu-hr
+  criterionRef: @ex-req-ahu-hr-c
+  outcomePass
+  conformancePlane
+  autoMode
+  ranAt: DateTime "2026-06-01T08:00:00-06:00 Denver"
+  notes: "heatRecovery marker present on all AHU records in scope"
+}
+
+// Performance check: June adherence landed at 91% against the 95% target
+@ex-vr-fail: VerificationResult {
+  requirementRef: @ex-req-space-temp
+  outcomeFail
+  performancePlane
+  autoMode
+  ranAt: DateTime "2026-06-30T17:00:00-06:00 Denver"
+  evalSpan: "2026-06-01..2026-06-30 occupied hours"
+  adherencePct: 91
+}
+
+// Inconclusive: trend data gap — honestly not "pass" and not "fail"
+@ex-vr-inconclusive: VerificationResult {
+  requirementRef: @ex-req-space-temp
+  outcomeInconclusive
+  performancePlane
+  autoMode
+  ranAt: DateTime "2026-05-31T17:00:00-06:00 Denver"
+  evalSpan: "2026-05-01..2026-05-31 occupied hours"
+  notes: "Zone sensors offline 5/09-5/21; insufficient data to evaluate adherence"
+}
+
+// ── Failing result -> issue -> owner-accepted variance (202 App O) ───────
+
+@ex-issue-adherence: CxIssue {
+  dis: "June space-temp adherence 91% vs 95% required"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  description: "West-zone afternoon solar load drives excursions above 74 degF; mitigation requires shade retrofit scheduled for Q4."
+  analyticsFault
+  priorityMedium
+  issueClosed
+  requirementRef: @ex-req-space-temp
+  sourceAnalytics
+  sourceRef: @ex-vr-fail
+}
+
+@ex-variance-adherence: RequirementVariance {
+  requirementRef: @ex-req-space-temp
+  description: "Owner accepts 90 percent adherence for the 2026 cooling season pending Q4 shade retrofit."
+  impacts: "Comfort: afternoon excursions to 76 degF in west zones. Energy: none. Health/safety: none."
+  expiresAt: Date "2026-09-30"
+  sourceIssueRef: @ex-issue-adherence
+  attestationRef: @ex-variance-signoff
+  acceptedAt: DateTime "2026-07-08T10:00:00-06:00 Denver"
+}
+
+@ex-variance-signoff: Attestation {
+  subjectRef: @ex-variance-adherence
+  ownerRole
+  userName: "Example Owner Rep"
+  signedAt: DateTime "2026-07-08T10:00:00-06:00 Denver"
+  notes: "Variance accepted per 202 Appendix O; CFR updated to v1.1"
+}
+
+// ── Systems Manual as an index of living records (202 App L) ─────────────
+
+@ex-facility-guide: FacilityGuide {
+  dis: "Example Facility Guide"
+  siteRef: @ex-site
+  version: "1.0"
+  docPublished
+  systemsManualRef: @ex-sysman
+}
+
+@ex-sysman: SystemsManual {
+  dis: "Example Systems Manual"
+  siteRef: @ex-site
+  cxProjectRef: @ex-project
+  version: "1.0"
+  docPublished
+  componentRefs: { @ex-opr, @ex-cfr-2, @ex-facility-guide }
 }

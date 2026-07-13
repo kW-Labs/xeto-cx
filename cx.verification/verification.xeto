@@ -33,6 +33,20 @@ AnswerReading: ChecklistAnswerType { answerReading }
 // Free-text entry
 AnswerText: ChecklistAnswerType { answerText }
 
+// Outcome of a single verification check run
+VerificationOutcome: Choice
+
+// Criteria satisfied
+OutcomePass: VerificationOutcome { outcomePass }
+
+// Criteria not satisfied
+OutcomeFail: VerificationOutcome { outcomeFail }
+
+// Could not be evaluated — missing data, unresolved scope, or evaluation
+// error. Distinct from fail: an honest contract never conflates "no data"
+// with "passed" or "failed".
+OutcomeInconclusive: VerificationOutcome { outcomeInconclusive }
+
 // Base type for everything that proves equipment or systems are acceptable.
 // Subject scoping: an activity is about at least one of equipRef, systemRef,
 // spaceRef, or siteRef (app-level invariant — commissioning covers systems,
@@ -169,5 +183,28 @@ Attestation: Dict {
   userName: Str?
   signedAt: DateTime
   evidenceRef: Ref?              // signature image or supporting document
+  notes: Str?
+}
+
+// One verification check run — the record of evaluating a requirement's
+// criteria against the current model or telemetry at a moment in time.
+// Standard 202 records verification in reports; this type makes each
+// check a first-class record so verification can re-run continuously
+// (OCx, 202 section 3) and phase gates can read live results. Append-only:
+// a re-check writes a new result; prior results remain for trend and audit.
+VerificationResult: Dict {
+  verificationResult
+  requirementRef: Ref          // of: cx.requirements::Requirement
+  criterionRef: Ref?           // of: SpecConstraint | PerformanceCriterion | ProcessRequirement
+  subjectRef: Ref?             // record checked: equip, system, space, or site
+  activityRef: Ref?            // of: VerificationActivity — when produced by a field activity
+  outcome: VerificationOutcome
+  plane: VerificationPlane?
+  mode: VerificationMode?      // autoMode for machine checks, manualMode for human-entered
+  ranAt: DateTime
+  evalSpan: Str?               // performance plane: span evaluated, e.g. "2026-06-01..2026-06-30 occupied"
+  actualVal: Obj?              // observed value at check time
+  adherencePct: Number?        // performance plane: percent of span within criteria
+  evidenceRef: Ref?            // supporting artifact: trend export, photo, report
   notes: Str?
 }

@@ -1,6 +1,6 @@
 pragma: Lib <
   doc: "Open commissioning ontology — deficiency and field-observation interchange shapes. Tools own storage; these shapes define the portable record format."
-  version: "0.1.0"
+  version: "0.2.0"
   depends: {
     { lib: "sys" }
     { lib: "hx" }

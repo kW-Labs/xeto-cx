@@ -14,7 +14,7 @@ owner keeps, instead of a PDF trapped in a proprietary tool.
 
 ## Status
 
-**Early draft (0.1.0) — seeking collaborators.** These libraries are being
+**Early draft (0.2.0) — seeking collaborators.** These libraries are being
 proven on real commissioning projects. The long-term intent is to contribute
 the core (`cx`, `cx.requirements`) to the
 [Project Haystack](https://project-haystack.org) library family as `ph.cx`,
@@ -30,11 +30,11 @@ not (yet) affiliated with Project Haystack.
 
 | Library | Purpose | Upstream ambition |
 |---|---|---|
-| `cx` | Root vocabulary: phases, roles, disciplines, verification planes/modes, the CxProject entity, and the tag vocabulary | ph.cx candidate |
-| `cx.requirements` | OPR/BOD document structures, Requirement, acceptance criteria, and the traceability spine | ph.cx candidate |
+| `cx` | Root vocabulary: phases, roles, disciplines, verification planes/modes, the CxProject entity, document taxonomy + OcxProgram, and the tag vocabulary | ph.cx candidate |
+| `cx.requirements` | OPR/CFR/BOD document structures, Requirement, acceptance criteria, variance records, and the traceability spine | ph.cx candidate |
 | `cx.verification` | Verification activities: checklists, PVT/FPT test scripts, contractor testing, start-ups, TAB, field observations, attestations | community-open |
 | `cx.issues` | Deficiency + field-observation interchange shapes | community-open |
-| `cx.content` | Seed reference content as instance data: an example OPR requirement set, an AHU installation checklist, an FPT script | illustrative only |
+| `cx.content` | Seed reference content as instance data: an example OPR requirement set, an AHU installation checklist, an FPT script, and an EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual) | illustrative only |
 
 ## The three verification planes
 
@@ -46,6 +46,24 @@ about that. Every `Requirement` declares its **verification plane**:
 | `conformance` | "All AHUs shall include heat recovery"; "CHW design ΔT ≥ 12°F" | `fits()` against typed records, via criteria that use xeto's own constraint vocabulary (`SpecConstraint`) |
 | `performance` | "Space temps 70–74°F at 95% adherence during occupied hours" | telemetry evaluation over a span (`PerformanceCriterion`) |
 | `attestation` | "Operators trained on the BAS before turnover" | human signoff with evidence (`ProcessRequirement` + `Attestation`) |
+
+## The whole lifecycle: OPR to CFR to Ongoing Cx
+
+Standard 202's Foreword names two transitions at turnover: the OPR may
+transition to the Current Facility Requirements (CFR), and the Cx Plan to
+an Ongoing Cx (OCx) Plan. This ontology models both. `Opr` and `Cfr` are
+subtypes of one abstract `RequirementsDoc` — a `Requirement` never knows
+which owns it, so the same requirement (and its verification criteria)
+survives from design intent to operating contract. `OcxProgram` anchors
+continuous verification against the current CFR, and every check —
+machine or human — writes a `VerificationResult` with a three-way
+outcome: `outcomePass`, `outcomeFail`, or `outcomeInconclusive`, because an honest record
+never reports "no data" as either compliance or violation. When the
+owner formally accepts performance at variance with a requirement
+(Standard 202 Appendix O), a `RequirementVariance` record preserves the
+amendment trail. The Systems Manual, which Appendix L assembles by
+inserting final copies of project documents, becomes an index of references to
+the living records instead.
 
 ## The traceability spine
 
@@ -67,7 +85,7 @@ spreadsheet.
 ```xeto
 @opr-3-1-1: Requirement {
   dis: "AHU heat recovery"
-  oprRef: @my-opr
+  docRef: @my-opr
   reqId: "OPR-3.1.1"
   narrative: "All air handling units serving more than 5,000 cfm outdoor air shall include exhaust air heat recovery."
   conformancePlane
