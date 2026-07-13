@@ -30,6 +30,35 @@ CxPhaseWarranty: CxPhase { warrantyPhase }
 // Engagement complete
 CxPhaseClosed: CxPhase { closedPhase }
 
+// EBCx: scoping, CFR development or review, OCx planning
+CxPhasePlanning: CxPhase { planningPhase }
+
+// EBCx: site investigation, testing, monitoring diagnostics
+CxPhaseInvestigation: CxPhase { investigationPhase }
+
+// EBCx: implementation of selected improvements
+CxPhaseImplementation: CxPhase { implementationPhase }
+
+// EBCx/OCx: hand-off and persistence — keeping improvements in place
+CxPhasePersistence: CxPhase { persistencePhase }
+
+// Kind of commissioning engagement. Existing Building Cx (EBCx,
+// ASHRAE Standard 202 section 3) is the umbrella for the retroCx and
+// reCx forms.
+CxProjectType: Choice
+
+// Cx of a new building delivered via capital construction
+CxTypeNewConstruction: CxProjectType { newConstructionProject }
+
+// Cx of a renovation or capital improvement to an existing building
+CxTypeRenovation: CxProjectType { renovationProject }
+
+// EBCx of a facility never previously commissioned (202: retrocommissioning)
+CxTypeRetroCx: CxProjectType { retroCxProject }
+
+// EBCx re-applying Cx to a previously commissioned facility (202: recommissioning)
+CxTypeReCx: CxProjectType { reCxProject }
+
 // Party responsible for a commissioning task, answer, or signoff
 CxRole: Choice
 
@@ -105,6 +134,7 @@ CxProject: Dict {
   siteRef: Ref                 // of: ph::Site
   buildingRef: Ref?
   phase: CxPhase
+  projectType: CxProjectType?
   contractScope: Str?
   scheduleStart: Date?
   scheduleEnd: Date?
@@ -119,6 +149,33 @@ CxEntity: Dict <abstract> {
 
   // Top-level commissioning project
   *cxProject: Marker
+
+  // Versioned commissioning document record
+  *cxDoc: Marker
+
+  // Requirements-document container (OPR or CFR)
+  *requirementsDoc: Marker
+
+  // Current Facility Requirements document
+  *cfr: Marker
+
+  // Commissioning Process Plan document
+  *cxPlan: Marker
+
+  // Systems Manual composite document
+  *systemsManual: Marker
+
+  // Facility Guide operating document
+  *facilityGuide: Marker
+
+  // Ongoing commissioning program
+  *ocxProgram: Marker
+
+  // Result of one verification check run
+  *verificationResult: Marker
+
+  // Owner-accepted variance from a requirement
+  *requirementVariance: Marker
 
   // Owner's Project Requirements document
   *opr: Marker
