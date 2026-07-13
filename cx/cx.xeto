@@ -141,6 +141,80 @@ CxProject: Dict {
   warrantyEnd: Date?
 }
 
+// Lifecycle status of a versioned commissioning document
+CxDocStatus: Choice
+
+// Being authored, freely editable
+CxDocDraft: CxDocStatus { docDraft }
+
+// Version stamped; machine-checkable criteria compiled
+CxDocPublished: CxDocStatus { docPublished }
+
+// Attested by owner/CxA; immutable
+CxDocSignedOff: CxDocStatus { docSignedOff }
+
+// Replaced by a later version
+CxDocSuperseded: CxDocStatus { docSuperseded }
+
+// Versioned commissioning document record. Subtypes cover the document
+// taxonomy of Standard 202. The record tracks the existence, version,
+// and lifecycle of the deliverable; the document content itself lives
+// wherever the project stores files, referenced via fileRef.
+CxDoc: Dict <abstract> {
+  cxDoc
+  dis: Str
+  siteRef: Ref                 // of: ph::Site
+  version: Str?
+  status: CxDocStatus?
+  publishedAt: DateTime?
+  fileRef: Ref?                // underlying file/blob record, when one exists
+}
+
+// Commissioning Process Plan (202 section 7): organization, schedule,
+// resources, and documentation requirements of the Cx. "The Cx Plan may
+// transition to an Ongoing Cx (OCx) Plan" (202 Foreword) — the OCx
+// continuation is referenced from OcxProgram.planRef.
+CxPlan: CxDoc {
+  cxPlan
+  cxProjectRef: Ref            // of: CxProject
+}
+
+// Systems Manual (202 section 14, Appendix L): system-focused composite
+// of design, construction, O&M, training, and Cx records. Modeled as an
+// index of references to living documents — where Appendix L says to
+// "insert final copy" of the OPR and BOD, this record points at the live
+// versioned records instead of embedding copies.
+SystemsManual: CxDoc {
+  systemsManual
+  cxProjectRef: Ref?           // of: CxProject
+  componentRefs: List?         // of: Ref — constituent documents: Opr, Bod, FacilityGuide, reports
+}
+
+// Facility Guide (202 section 3): basic systems description and operating
+// plan — confirmed operating conditions, set points, schedules, and
+// procedures — the operational subset of the Systems Manual used day to
+// day by facility operations and OCx.
+FacilityGuide: CxDoc {
+  facilityGuide
+  systemsManualRef: Ref?       // of: SystemsManual
+}
+
+// Ongoing commissioning program — the continuous counterpart of CxProject.
+// Facility-anchored with no end date: where a project is a bounded
+// engagement, a program persists to verify the facility against its
+// current requirements ("Ongoing Cx", 202 section 3). The program owns
+// cadence; the CFR owns the requirements; VerificationResult records
+// carry the evidence.
+OcxProgram: Dict {
+  ocxProgram
+  dis: Str
+  siteRef: Ref                 // of: ph::Site
+  cfrRef: Ref?                 // of: cx.requirements::Cfr
+  planRef: Ref?                // of: CxPlan — the OCx Plan the Cx Plan transitioned to (202 Foreword)
+  startedAt: Date?
+  reviewCadence: Str?          // e.g. "quarterly"
+}
+
 // Abstract base declaring the commissioning entity-marker vocabulary as
 // global slots. Follows the ph architecture: the root lib owns the tag
 // vocabulary, the family libs (cx.requirements, cx.verification, cx.issues)
