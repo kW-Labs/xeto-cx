@@ -85,8 +85,11 @@ CxIssue: Dict {
   category: CxIssueCategory?
   priority: CxIssuePriority?
   status: CxIssueStatus
-  assignedRole: CxRole?
-  ballInCourt: CxRole?           // who owes the next action (approval nuance lives here, not in extra states)
+  assignedRole: CxRole?          // party responsible for correction
+  ballInCourt: Str?              // who owes the next action, as a CxRole marker name,
+                                 // e.g. "cxpRole" — a Str because a record carries at
+                                 // most one CxRole choice marker and assignedRole owns it
+                                 // (approval nuance lives here, not in extra states)
   requirementRef: Ref?           // of: cx.requirements::Requirement
   sourceType: CxIssueSource?
   sourceRef: Ref?                // record that raised this issue
