@@ -4,13 +4,114 @@ RequirementPriority: Choice
 ReqRequired: RequirementPriority { reqRequired }
 ReqPreferred: RequirementPriority { reqPreferred }
 
+// OPR content category — the enumeration of Guideline 0 section 5.2.2.4
+// items (a) through (ac), one value per lettered item. Complements the
+// free-form category string with a typed, standard-anchored vocabulary.
+OprCategory: Choice
+
+// (a) Project schedule and budget
+OprCatScheduleBudget: OprCategory { oprScheduleBudget }
+
+// (b) Cx scope and budget
+OprCatCxScope: OprCategory { oprCxScope }
+
+// (c) Project documentation requirements and formats
+OprCatDocumentation: OprCategory { oprDocumentation }
+
+// (d) Owner directives
+OprCatOwnerDirectives: OprCategory { oprOwnerDirectives }
+
+// (e) Restrictions and limitations
+OprCatRestrictions: OprCategory { oprRestrictions }
+
+// (f) User requirements
+OprCatUserRequirements: OprCategory { oprUserRequirements }
+
+// (g) Occupancy requirements and schedules
+OprCatOccupancy: OprCategory { oprOccupancy }
+
+// (h) Training requirements for Owner's personnel
+OprCatTraining: OprCategory { oprTraining }
+
+// (i) Warranty requirements
+OprCatWarranty: OprCategory { oprWarranty }
+
+// (j) Benchmarking requirements
+OprCatBenchmarking: OprCategory { oprBenchmarking }
+
+// (k) O&M criteria for the facility
+OprCatOmCriteria: OprCategory { oprOmCriteria }
+
+// (l) Equipment and system maintainability expectations
+OprCatMaintainability: OprCategory { oprMaintainability }
+
+// (m) Quality requirements for materials and construction
+OprCatMaterialQuality: OprCategory { oprMaterialQuality }
+
+// (n) Allowable tolerance in facility system operations
+OprCatOperatingTolerance: OprCategory { oprOperatingTolerance }
+
+// (o) Energy efficiency goals
+OprCatEnergy: OprCategory { oprEnergy }
+
+// (p) Environmental and sustainability goals
+OprCatSustainability: OprCategory { oprSustainability }
+
+// (q) Community requirements
+OprCatCommunity: OprCategory { oprCommunity }
+
+// (r) Adaptability for future facility changes and expansion
+OprCatAdaptability: OprCategory { oprAdaptability }
+
+// (s) Systems integration requirements
+OprCatSystemsIntegration: OprCategory { oprSystemsIntegration }
+
+// (t) Health, hygiene, and indoor environment requirements
+OprCatHealthIeq: OprCategory { oprHealthIeq }
+
+// (u) Acoustical requirements
+OprCatAcoustical: OprCategory { oprAcoustical }
+
+// (v) Vibration requirements
+OprCatVibration: OprCategory { oprVibration }
+
+// (w) Seismic requirements
+OprCatSeismic: OprCategory { oprSeismic }
+
+// (x) Accessibility requirements
+OprCatAccessibility: OprCategory { oprAccessibility }
+
+// (y) Security requirements
+OprCatSecurity: OprCategory { oprSecurity }
+
+// (z) Aesthetics requirements
+OprCatAesthetics: OprCategory { oprAesthetics }
+
+// (aa) Constructibility requirements
+OprCatConstructibility: OprCategory { oprConstructibility }
+
+// (ab) Communication requirements
+OprCatCommunication: OprCategory { oprCommunication }
+
+// (ac) Applicable codes and standards
+OprCatCodesStandards: OprCategory { oprCodesStandards }
+
+// Required pressure relationship of a space to adjacent areas — the
+// "Pressure Relationship to Adjacent Areas" column of ASHRAE 170-2013
+// Table 7-1, which is sometimes specified without numeric limits.
+PressureRelationship: Choice
+
+PositivePressure: PressureRelationship { positivePressure }
+NegativePressure: PressureRelationship { negativePressure }
+NeutralPressure: PressureRelationship { neutralPressure }
+
 // Designer's disposition of a requirement in the BOD
 BodResponseStatus: Choice
 
 // Response drafted, awaiting review
 ResponseProposed: BodResponseStatus { responseProposed }
 
-// Owner/CxA accepted the design response
+// Owner/CxP accepted the design response
 ResponseAccepted: BodResponseStatus { responseAccepted }
 
 // Design takes documented exception to the requirement
@@ -62,8 +163,11 @@ Requirement: Dict {
   docRef: Ref                  // of: RequirementsDoc — the document version that owns this requirement
   sourceDocRef: Ref?           // provenance: source document this requirement was extracted from
   sourcePage: Number?          // provenance: page within sourceDocRef
+  citation: Str?               // provenance: external standard/code clause, e.g. "ASHRAE 170-2013 Table 7-1"
   reqId: Str                   // human-stable id, e.g. "OPR-3.2.1" — survives versioning
   category: Str?               // e.g. energy, comfort, iaq, resilience, om
+  oprCategory: OprCategory?    // typed Guideline 0 section 5.2.2.4 content category
+  keyOpr: Marker?              // one of the owner's Key OPR items (Guideline 0 Appendix J)
   narrative: Str               // the requirement as the owner reads it
   plane: VerificationPlane
   priority: RequirementPriority?
@@ -73,6 +177,9 @@ Requirement: Dict {
   targetRefs: List?            // of: Ref — scope: explicit instances
   systemSpec: Str?             // scope: system spec qname
   spaceSpec: Str?              // scope: space spec qname
+  spaceTypeKey: Str?           // scope: vendor-neutral space-type key from the 62.1/170 occupancy
+                               // categories, e.g. "operatingRoom" — survives tool and ontology
+                               // boundaries where spaceSpec qnames cannot
   supersedesRef: Ref?          // of: Requirement — version lineage, incl. across the OPR-to-CFR transition
 }
 
@@ -93,17 +200,21 @@ SpecConstraint: Dict {
 }
 
 // Performance-plane criterion, evaluated against telemetry over a span
-// rather than against static records.
+// rather than against static records. One record per occupancy mode when
+// criteria differ by mode — the shape of a room-by-room OPR acceptance
+// matrix: setpoint band, tolerance, and adherence per mode per quantity.
 PerformanceCriterion: Dict {
   performanceCriterion
   requirementRef: Ref          // of: Requirement
   pointSpec: Str?              // point spec qname, e.g. "ph.points::DischargeAirTempSensor"
   pointRefs: List?             // of: Ref — explicit points
+  occMode: OccupancyMode?      // mode this criterion applies in; absent = all modes
   minVal: Number?
   maxVal: Number?
   targetVal: Number?
   tolerance: Number?
   unit: Str?
+  pressureRel: PressureRelationship?  // space pressurization criteria (170-2013 Table 7-1)
   adherenceTarget: Number?     // required percent of time in range, e.g. 95
   evalSpan: Str?               // e.g. "30day rolling", "occupied hours"
   verificationMode: VerificationMode?
@@ -148,19 +259,20 @@ DesignReviewComment: Dict {
   disposition: Str?            // open, resolved, withdrawn
 }
 
-// Owner-accepted variance from a requirement (202 Appendix O): a formal,
+// Owner-accepted variance from a requirement (202 Appendix O(a)): a formal,
 // documented acceptance of performance at variance with the OPR/CFR,
 // either permanent or until correction is scheduled. The contract-
 // amendment primitive: verification treats an active variance as the
 // requirement's operative expectation, and the requirements document is
 // updated to match ("The OPR must be updated to match the revised
-// expectations", App O). Immutable once attested; the variance trail is
+// expectations", App O(a)). Immutable once attested; the variance trail is
 // the amendment history.
 RequirementVariance: Dict {
   requirementVariance
   requirementRef: Ref          // of: Requirement
   description: Str             // the accepted deviation
-  impacts: Str?                // documented environmental, health, safety, comfort, energy, and O&M cost impacts
+  impacts: Str?                // impact narrative as documented for the owner
+  impactAreas: CxImpactArea? <multiChoice>  // the App O(a) impact enumeration
   permanent: Marker?           // accepted permanently; otherwise time-bound
   expiresAt: Date?             // when a time-bound variance lapses
   sourceIssueRef: Ref?         // of: cx.issues::CxIssue — issue whose acceptance created this
