@@ -75,9 +75,13 @@ CxRole: Choice
 // (CxA)" with CxP; this spec follows the current standard.
 CxRoleCxp: CxRole { cxpRole }
 
-// Design professional — architect / engineer of record; authors the BOD
+// Design professional — architect or design-team member; authors the BOD
 // and responds to design review comments (202 sections 8 and 10.2.3)
 CxRoleDesigner: CxRole { designerRole }
+
+// Engineer of Record — holds the approval authority on design documents
+// and submittals, distinct from the CxP's commissionability review
+CxRoleEor: CxRole { eorRole }
 
 // Construction manager — schedule, coordination, and acceptance flow
 CxRoleConstructionManager: CxRole { constructionManagerRole }
@@ -125,7 +129,8 @@ CxRoleFacilityManager: CxRole { facilityManagerRole }
 CxParty: Enum {
   owner                // building owner or owner's representative
   cxp                  // Commissioning Provider
-  designer             // design professional / engineer of record
+  designer             // design professional / architect
+  eor                  // Engineer of Record
   constructionManager  // construction manager
   gc                   // general contractor
   mechanical           // mechanical contractor
@@ -253,16 +258,31 @@ CxDoc: Dict <abstract> {
   version: Str?
   status: CxDocStatus?
   publishedAt: DateTime?
+  supersedesRef: Ref?          // of: CxDoc — prior version this document replaces;
+                               // makes the amendment history a walkable graph
   fileRef: Ref?                // underlying file/blob record, when one exists
 }
 
 // Commissioning Process Plan (202 section 7): organization, schedule,
 // resources, and documentation requirements of the Cx. "The Cx Plan may
 // transition to an Ongoing Cx (OCx) Plan" (202 Foreword) — the OCx
-// continuation is referenced from OcxProgram.planRef.
+// continuation is referenced from OcxProgram.planRef. cxProjectRef is
+// set for project-born plans; a facility-anchored OCx Plan re-issued
+// under a standing program may stand alone on siteRef.
 CxPlan: CxDoc {
   cxPlan
-  cxProjectRef: Ref            // of: CxProject
+  cxProjectRef: Ref?           // of: CxProject
+}
+
+// Training plan (202 section 3): "a written document that details the
+// expectations, schedule, duration, and deliverables for Cx Activities
+// related to training of project operations and maintenance personnel,
+// users, and occupants." Contents per 202 section 15.2.1; accepted by
+// the Owner before instruction begins (202 section 15.3.1). Delivered
+// sessions are cx.verification::TrainingSession records.
+TrainingPlan: CxDoc {
+  trainingPlan
+  cxProjectRef: Ref?           // of: CxProject
 }
 
 // Systems Manual (202 section 14, Appendix L): system-focused composite
@@ -311,7 +331,9 @@ SmPartCxReport: SmPart { smCxReport }
 // One typed index row of a Systems Manual: which living document record
 // serves which part, ordered by spec section, per system where applicable.
 // Guideline 1.4 endorses indexing over embedding ("the location shall be
-// noted"); this is the machine form of that index.
+// noted"); this is the machine form of that index. An entry carries at
+// least one of docRef (a tracked record) or location (a document held
+// outside the record system).
 SystemsManualEntry: Dict {
   systemsManualEntry
   systemsManualRef: Ref        // of: SystemsManual
@@ -592,8 +614,8 @@ CxEntity: Dict <abstract> {
   // Human signoff with evidence
   *attestation: Marker
 
-  // Owner training program document
-  *trainingProgram: Marker
+  // Owner training plan document (202 section 3)
+  *trainingPlan: Marker
 
   // One delivered training session
   *trainingSession: Marker

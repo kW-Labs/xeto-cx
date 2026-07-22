@@ -66,7 +66,8 @@ from sequence atoms. cx.sequences models exactly that anatomy:
   check boxes alone "should be avoided" — `TestStepResult` records observed
   response per step per run, and activities carry retest lineage, test
   conditions, and deferred/seasonal scheduling.
-- **Training is verified work.** `TrainingProgram`, `TrainingSession` (a
+- **Training is verified work.** `TrainingPlan` (202 section 3's defined
+  document, in the CxDoc taxonomy), `TrainingSession` (a
   VerificationActivity), and `TrainingAttendance` are the training records
   202 section 15 and Guideline 1.4 Part 5 require the Systems Manual to
   retain.
@@ -94,6 +95,20 @@ verified. `CxMeasure` + `SavingsEstimate` model that, keeping the finding
 itself a `cx.issues::CxIssue` — the measure is the solution, not the
 deficiency. Savings records are append-only so the estimate-to-verified
 trail stays auditable.
+
+## Review refinements
+
+Design review of the 0.3.0 branch resolved five open proposals into the
+release: `TrainingPlan` takes 202 section 3's defined name and joins the
+CxDoc taxonomy in the root lib (#3); `CxDoc.supersedesRef` makes document
+amendment history a walkable graph (#4); the report types settle the
+report-record discussion (#5); `CxPlan.cxProjectRef` relaxes to optional
+so a facility-anchored OCx Plan continuation stands alone on siteRef
+(#6); `Requirement` gains a `prohibition` polarity marker (verification
+passes on absence, the inverse of the default) plus `deviationAuthority`
+for "unless approved by ..." gates, feeding the RequirementVariance
+workflow (#9); and `eorRole` joins CxRole because the Engineer of
+Record's approval is contractually distinct from the CxP's review (#10).
 
 ## Deliberately deferred
 

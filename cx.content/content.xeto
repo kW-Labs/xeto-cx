@@ -164,6 +164,23 @@
   autoMode
 }
 
+// A prohibition: verification passes on ABSENCE of the prohibited
+// condition. The matrix's "Exhausted" column is this requirement.
+@ex-req-aii-recirc: Requirement {
+  dis: "AII room air recirculation prohibited"
+  docRef: @ex-opr
+  reqId: "OPR-4.2.3"
+  category: "iaq"
+  oprHealthIeq
+  narrative: "Air from airborne infection isolation rooms shall not be recirculated; AII room exhaust shall discharge directly outdoors."
+  citation: "ASHRAE 170-2013 Table 7-1"
+  conformancePlane
+  reqRequired
+  prohibition
+  spaceSpec: "ph::Space"
+  spaceTypeKey: "aiiRoom"
+}
+
 // ── Attestation-plane requirements — human signoff with evidence ─────────
 
 @ex-req-training: Requirement {
@@ -490,6 +507,7 @@
   version: "1.1"
   docPublished
   publishedAt: DateTime "2026-07-08T12:00:00-06:00 Denver"
+  supersedesRef: @ex-cfr
   narrative: "Amended after owner accepted a seasonal space-temperature variance (see variance record)."
   sourceOprRefs: { @ex-opr }
 }
@@ -657,8 +675,8 @@
 
 // ── Training delivered and formally accepted ─────────────────────────────
 
-@ex-training-prog: TrainingProgram {
-  dis: "Example Facility Training Program"
+@ex-training-plan: TrainingPlan {
+  dis: "Example Facility Training Plan"
   siteRef: @ex-site
   cxProjectRef: @ex-project
   version: "1.0"
@@ -669,7 +687,7 @@
   dis: "BAS operation — hands-on"
   cxProjectRef: @ex-project
   siteRef: @ex-site
-  programRef: @ex-training-prog
+  trainingPlanRef: @ex-training-plan
   topic: "Building automation system operation"
   facilityManagerRole
   instructor: "Controls contractor lead technician"
@@ -686,12 +704,12 @@
   signedIn
 }
 
-// Formal owner acceptance of the training program deliverable (202
+// Formal owner acceptance of the training plan deliverable (202
 // section 15.3.1: accepted before instruction begins)
 @ex-accept-training: AcceptanceRecord {
   cxProjectRef: @ex-project
   trainingPhase
-  subjectRef: @ex-training-prog
+  subjectRef: @ex-training-plan
   acceptanceAccepted
   recommendedAt: DateTime "2026-06-01T09:00:00-06:00 Denver"
   acceptedAt: DateTime "2026-06-03T14:00:00-06:00 Denver"
@@ -760,6 +778,6 @@
 
 @ex-sm-e3: SystemsManualEntry {
   systemsManualRef: @ex-sysman
-  docRef: @ex-training-prog
+  docRef: @ex-training-plan
   smTraining
 }

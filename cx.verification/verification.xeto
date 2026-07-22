@@ -218,21 +218,13 @@ TestStepResult: Dict {
   notes: Str?
 }
 
-// Owner training program document — syllabus, session plan, instructor
-// qualifications, and materials requirements (202 section 15.2.1;
-// Guideline 0 Appendix P). Accepted by the Owner before instruction
-// begins (202 section 15.3.1).
-TrainingProgram: CxDoc {
-  trainingProgram
-  cxProjectRef: Ref              // of: cx::CxProject
-}
-
 // One delivered training session, verified like any other activity —
 // attendance, duration, and instructor are the training record the
 // Systems Manual retains (202 section 14.2.3 part 5; Guideline 1.4 Part 5).
+// The plan document itself is cx::TrainingPlan.
 TrainingSession: VerificationActivity {
   trainingSession
-  programRef: Ref?               // of: TrainingProgram
+  trainingPlanRef: Ref?          // of: cx::TrainingPlan
   topic: Str?
   audience: CxRole?              // who is being trained, e.g. facilityManagerRole
   instructor: Str?

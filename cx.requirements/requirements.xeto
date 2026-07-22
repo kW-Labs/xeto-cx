@@ -205,6 +205,14 @@ Requirement: Dict {
   narrative: Str               // the requirement as the owner reads it
   plane: VerificationPlane
   priority: RequirementPriority?
+  prohibition: Marker?         // polarity: the requirement PROHIBITS its subject condition —
+                               // verification passes on absence and fails on presence, the
+                               // inverse of the default. Orthogonal to priority: reqRequired +
+                               // prohibition = hard prohibition; reqPreferred + prohibition =
+                               // discouraged
+  deviationAuthority: CxRole?  // named authority whose approval permits deviation ("unless
+                               // approved by ..."); an approved deviation is recorded as a
+                               // RequirementVariance
   phases: CxPhase? <multiChoice>   // phases in which this requirement is verified
   siteRef: Ref?                // scope: site
   targetSpec: Str?             // scope: equipment spec qname, e.g. "ph::Ahu"
