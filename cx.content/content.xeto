@@ -86,6 +86,77 @@
   autoMode
 }
 
+// ── Room-matrix requirements — per-space-type, per-mode criteria ─────────
+// The shape of a room-by-room OPR acceptance matrix: one requirement per
+// space type per quantity, one PerformanceCriterion per occupancy mode,
+// each carrying setpoint band + tolerance + adherence, with the governing
+// standard cited on the requirement.
+
+@ex-req-patient-temp: Requirement {
+  dis: "Patient room temperature"
+  docRef: @ex-opr
+  reqId: "OPR-4.2.1"
+  category: "comfort"
+  oprHealthIeq
+  keyOpr
+  narrative: "Patient rooms shall maintain 70-75 degF while occupied and 65-78 degF while unoccupied, within 1 degF tolerance, at the stated adherence."
+  citation: "ASHRAE 170-2013 Table 7-1"
+  performancePlane
+  reqRequired
+  spaceSpec: "ph::Space"
+  spaceTypeKey: "patientRoom"
+}
+
+@ex-req-patient-temp-occ: PerformanceCriterion {
+  requirementRef: @ex-req-patient-temp
+  pointSpec: "ph::Point"
+  occupiedMode
+  minVal: 70
+  maxVal: 75
+  tolerance: 1
+  unit: "°F"
+  adherenceTarget: 95
+  autoMode
+}
+
+@ex-req-patient-temp-unocc: PerformanceCriterion {
+  requirementRef: @ex-req-patient-temp
+  pointSpec: "ph::Point"
+  unoccupiedMode
+  minVal: 65
+  maxVal: 78
+  tolerance: 1
+  unit: "°F"
+  adherenceTarget: 90
+  autoMode
+}
+
+@ex-req-aii-pressure: Requirement {
+  dis: "AII room pressurization"
+  docRef: @ex-opr
+  reqId: "OPR-4.2.2"
+  category: "iaq"
+  oprHealthIeq
+  keyOpr
+  narrative: "Airborne infection isolation rooms shall maintain negative pressure of 0.01 to 0.05 in. w.c. relative to adjacent areas at all times."
+  citation: "ASHRAE 170-2013 Table 7-1"
+  performancePlane
+  reqRequired
+  spaceSpec: "ph::Space"
+  spaceTypeKey: "aiiRoom"
+}
+
+@ex-req-aii-pressure-c: PerformanceCriterion {
+  requirementRef: @ex-req-aii-pressure
+  pointSpec: "ph::Point"
+  negativePressure
+  minVal: -0.05
+  maxVal: -0.01
+  unit: "inH₂O"
+  adherenceTarget: 99
+  autoMode
+}
+
 // ── Attestation-plane requirements — human signoff with evidence ─────────
 
 @ex-req-training: Requirement {
@@ -244,7 +315,7 @@
 @ex-ahu-i15: ChecklistItemDef {
   templateRef: @ex-ahu-install
   itemId: "i15"
-  label: "Commissioning Agent"
+  label: "Commissioning Provider"
   answerSection
   sortOrder: 15
 }
@@ -254,7 +325,7 @@
   itemId: "i16"
   label: "Maintenance access acceptable for unit and components."
   answerYesNoNa
-  cxaRole
+  cxpRole
   sortOrder: 16
 }
 
@@ -292,6 +363,99 @@
   instruction: "Restore all overrides and return unit to normal automatic operation."
   expected: "Unit returns to scheduled operation with no active alarms."
   sortOrder: 3
+}
+
+//
+// Example sequence application — a published guideline sequence applied to
+// the project AHU. The source is cited by section id (published prose is
+// never embedded); the parameter records are the fill-in contract; the
+// statement compiles into a requirement and an FPT step.
+//
+
+@ex-seq-g36: SequenceSource {
+  dis: "ASHRAE Guideline 36-2024"
+  publisher: "ASHRAE"
+  docId: "G36-2024"
+  edition: "2024"
+}
+
+@ex-seq-sat: SequenceSection {
+  sourceRef: @ex-seq-g36
+  sectionId: "5.16.2.2"
+  title: "Supply air temperature setpoint reset"
+  modeLogicSection
+  stableAnchor
+}
+
+@ex-seq-sat-stmt: SequenceStatement {
+  sectionRef: @ex-seq-sat
+  requirementRef: @ex-req-sat-reset
+  sortOrder: 1
+}
+
+@ex-req-sat-reset: Requirement {
+  dis: "AHU supply air temperature reset"
+  docRef: @ex-opr
+  reqId: "OPR-3.3.1"
+  category: "energy"
+  oprEnergy
+  narrative: "Air handling unit supply air temperature setpoint shall reset per the trim-and-respond logic of the cited guideline section, within the design minimum and maximum setpoint limits."
+  citation: "ASHRAE G36-2024 section 5.16.2.2"
+  attestationPlane
+  reqRequired
+  targetSpec: "ph::Ahu"
+}
+
+// Designer-scheduled setpoint limit — placeholder until the design supplies it
+@ex-seq-param-maxsat: SequenceParam {
+  sourceRef: @ex-seq-g36
+  symbol: "Max_ClgSAT"
+  dis: "Maximum cooling supply air temperature setpoint"
+  definedIn: "3.1.4.1"
+  designerRole
+  setpointParam
+  unit: "°F"
+  placeholder
+}
+
+// TAB-measured pressure ceiling — field-determined per the source's procedure
+@ex-seq-param-maxdsp: SequenceParam {
+  sourceRef: @ex-seq-g36
+  symbol: "Max_DSP"
+  dis: "Maximum duct static pressure setpoint"
+  definedIn: "3.2.1.1"
+  tabRole
+  tuningParam
+  unit: "inH₂O"
+  placeholder
+  procedure: "Field-measured at design airflow per the source's TAB procedure"
+}
+
+@ex-seq-inst: SequenceInstance {
+  dis: "AHU-1 supply air temperature reset"
+  sourceRef: @ex-seq-g36
+  cxProjectRef: @ex-project
+  sectionRefs: { @ex-seq-sat }
+  notes: "Applied to the example AHU; Max_DSP unresolved pending TAB"
+}
+
+@ex-seq-pv-maxsat: SequenceParamValue {
+  instanceRef: @ex-seq-inst
+  paramRef: @ex-seq-param-maxsat
+  val: Number "65°F"
+  designerRole
+  resolvedAt: DateTime "2026-03-15T09:00:00-06:00 Denver"
+}
+
+// FPT step generated from the sequence statement, closing the loop from
+// sequence atom to witnessed test
+@ex-fpt-s04: TestStepDef {
+  scriptRef: @ex-ahu-fpt
+  stepId: "s04"
+  instruction: "Generate cooling requests from multiple zones; observe supply air temperature setpoint response."
+  expected: "Setpoint trims and responds within the configured minimum and maximum limits."
+  requirementRefs: { @ex-req-sat-reset }
+  sortOrder: 4
 }
 
 //
@@ -433,7 +597,108 @@
   ownerRole
   userName: "Example Owner Rep"
   signedAt: DateTime "2026-07-08T10:00:00-06:00 Denver"
-  notes: "Variance accepted per 202 Appendix O; CFR updated to v1.1"
+  notes: "Variance accepted per 202 Appendix O(a); CFR updated to v1.1"
+}
+
+// ── Finding -> measure -> savings (EBCx master list of findings) ─────────
+// The issue above is the finding; the measure carries the solution and its
+// economics; savings records harden from estimated toward verified.
+
+@ex-measure-shade: CxMeasure {
+  dis: "West-zone exterior shade retrofit"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  findingRef: @ex-issue-adherence
+  description: "Install exterior shading on west-facing glazing to eliminate afternoon solar-driven temperature excursions."
+  capitalMeasure
+  sowMedium
+  measureApproved
+  costEst: 42000
+  paybackYears: 8.5
+  ownerPriority: 1
+  benefits: "Restores 95 percent comfort adherence; reduces peak cooling load."
+  risks: "Facade permit review may extend schedule past Q4."
+}
+
+@ex-measure-shade-sav: SavingsEstimate {
+  measureRef: @ex-measure-shade
+  elecSavings
+  estimatedBasis
+  annualQty: 31000
+  qtyUnit: "kWh"
+  annualCost: 4900
+  method: "hourly simulation of west-zone cooling load with and without shading"
+  estimatedAt: Date "2026-07-05"
+}
+
+// ── Training delivered and formally accepted ─────────────────────────────
+
+@ex-training-prog: TrainingProgram {
+  dis: "Example Facility Training Program"
+  siteRef: @ex-site
+  cxProjectRef: @ex-project
+  version: "1.0"
+  docSignedOff
+}
+
+@ex-training-bas: TrainingSession {
+  dis: "BAS operation — hands-on"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  programRef: @ex-training-prog
+  topic: "Building automation system operation"
+  facilityManagerRole
+  instructor: "Controls contractor lead technician"
+  durationHr: 8
+  heldAt: DateTime "2026-06-20T08:00:00-06:00 Denver"
+  trainingPhase
+  activityPassed
+  requirementRefs: { @ex-req-training }
+}
+
+@ex-training-att: TrainingAttendance {
+  sessionRef: @ex-training-bas
+  attendee: "Example Operator"
+  signedIn
+}
+
+// Formal owner acceptance of the training program deliverable (202
+// section 15.3.1: accepted before instruction begins)
+@ex-accept-training: AcceptanceRecord {
+  cxProjectRef: @ex-project
+  trainingPhase
+  subjectRef: @ex-training-prog
+  acceptanceAccepted
+  recommendedAt: DateTime "2026-06-01T09:00:00-06:00 Denver"
+  acceptedAt: DateTime "2026-06-03T14:00:00-06:00 Denver"
+  attestationRef: @ex-accept-training-sig
+}
+
+@ex-accept-training-sig: Attestation {
+  subjectRef: @ex-accept-training
+  ownerRole
+  userName: "Example Owner Rep"
+  signedAt: DateTime "2026-06-03T14:00:00-06:00 Denver"
+}
+
+// ── Per-step test evidence (Guideline 0 section 7.2.10.1g) ───────────────
+
+@ex-fpt-run: FptTest {
+  dis: "AHU-1 FPT — first attempt"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  scriptRef: @ex-ahu-fpt
+  fptPhase
+  activityPassed
+  attemptNo: 1
+  testConditions: "OAT 58 degF; occupied mode; no active overrides at start"
+}
+
+@ex-fpt-run-r01: TestStepResult {
+  activityRef: @ex-fpt-run
+  stepRef: @ex-fpt-s01
+  itemPass
+  observed: "OA damper drove to 100 percent in 90 seconds; chilled water valve remained closed"
 }
 
 // ── Systems Manual as an index of living records (202 App L) ─────────────
@@ -453,4 +718,24 @@
   version: "1.0"
   docPublished
   componentRefs: { @ex-opr, @ex-cfr-2, @ex-facility-guide }
+}
+
+// Typed index rows — which record serves which of the six parts shared by
+// 202 section 14.2.3 and Guideline 1.4 section 4.3.2
+@ex-sm-e1: SystemsManualEntry {
+  systemsManualRef: @ex-sysman
+  docRef: @ex-cfr-2
+  smDesignConstruction
+}
+
+@ex-sm-e2: SystemsManualEntry {
+  systemsManualRef: @ex-sysman
+  docRef: @ex-facility-guide
+  smFacilityOps
+}
+
+@ex-sm-e3: SystemsManualEntry {
+  systemsManualRef: @ex-sysman
+  docRef: @ex-training-prog
+  smTraining
 }

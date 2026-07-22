@@ -14,7 +14,7 @@ owner keeps, instead of a PDF trapped in a proprietary tool.
 
 ## Status
 
-**Early draft (0.2.0) — seeking collaborators.** These libraries are being
+**Early draft (0.3.0) — seeking collaborators.** These libraries are being
 proven on real commissioning projects. The long-term intent is to contribute
 the core (`cx`, `cx.requirements`) to the
 [Project Haystack](https://project-haystack.org) library family as `ph.cx`,
@@ -30,11 +30,13 @@ not (yet) affiliated with Project Haystack.
 
 | Library | Purpose | Upstream ambition |
 |---|---|---|
-| `cx` | Root vocabulary: phases, roles, disciplines, verification planes/modes, the CxProject entity, document taxonomy + OcxProgram, and the tag vocabulary | ph.cx candidate |
-| `cx.requirements` | OPR/CFR/BOD document structures, Requirement, acceptance criteria, variance records, and the traceability spine | ph.cx candidate |
-| `cx.verification` | Verification activities: checklists, PVT/FPT test scripts, contractor testing, start-ups, TAB, field observations, attestations | community-open |
-| `cx.issues` | Deficiency + field-observation interchange shapes | community-open |
-| `cx.content` | Seed reference content as instance data: an example OPR requirement set, an AHU installation checklist, an FPT script, and an EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual) | illustrative only |
+| `cx` | Root vocabulary: phases, roles, disciplines, verification planes/modes, occupancy modes, the CxProject entity, the Standard 202 document taxonomy (incl. Cx reports, Acceptance Plan, Systems Manual index) + OcxProgram, acceptance records, and the tag vocabulary | ph.cx candidate |
+| `cx.requirements` | OPR/CFR/BOD document structures, Requirement (with Guideline 0 content categories and external-standard citations), per-mode acceptance criteria, variance records, and the traceability spine | ph.cx candidate |
+| `cx.verification` | Verification activities: checklists, PVT/FPT test scripts with per-step results, contractor testing, submittal reviews, start-ups, TAB, field observations, training records, attestations | community-open |
+| `cx.issues` | Deficiency + field-observation interchange shapes, with the Standard 202 issues-log field set | community-open |
+| `cx.measures` | Improvement measures and savings — the EBCx master list of findings as data, with per-category savings that harden from estimated to verified | community-open |
+| `cx.sequences` | Control sequences of operation as commissioning artifacts: citable sources/sections, atomic checkable statements, and the parameter fill-in contract (designer / TAB / controls) | community-open |
+| `cx.content` | Seed reference content as instance data: an example OPR requirement set (incl. a room-matrix criteria set), an AHU installation checklist, an FPT script with step results, a Guideline 36 sequence application, an EBCx measure with savings, and an EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual) | illustrative only |
 
 ## The three verification planes
 
@@ -108,7 +110,13 @@ extending `ph::Ahu` and validates every AHU record against it with
 
 These libraries encode the *artifacts* of the commissioning process that
 Guideline 0 and Standard 202 define in prose — they implement the process as
-data, they do not replace or reinterpret the standards.
+data, they do not replace or reinterpret the standards. The 0.3.0 vocabulary
+was aligned against Guideline 0-2019, Standard 202-2018 (including the
+Addendum a CxA-to-CxP terminology change), Guideline 1.4-2019 (Systems
+Manuals), Guideline 36-2024 (sequences of operation), and the BCxA New
+Construction, EBCx, and Ongoing Cx best-practice guides. Published guideline
+content is referenced by citation — section ids and clause paths — never
+embedded. See `docs/2026-07-standards-alignment-0.3.0.md` for the rationale.
 
 ## Building
 
@@ -117,7 +125,7 @@ SkySpark 4.0.5+):
 
 ```bash
 # copy the cx* directories into {fan.home}/src/xeto/, then:
-xeto build cx cx.requirements cx.verification cx.issues cx.content
+xeto build cx cx.requirements cx.verification cx.issues cx.measures cx.sequences cx.content
 ```
 
 CI compiles every push with Haxall — see `.github/workflows/build.yml`.

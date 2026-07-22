@@ -32,7 +32,7 @@ jobs:
       - name: Copy libs into haxall/src/xeto
         run: |
           mkdir -p haxall/src/xeto
-          for d in cx cx.requirements cx.verification cx.issues cx.content; do
+          for d in cx cx.requirements cx.verification cx.issues cx.measures cx.sequences cx.content; do
             cp -r "$d" "haxall/src/xeto/$d"
           done
           ls haxall/src/xeto/
@@ -42,16 +42,16 @@ jobs:
           FAN_HOME: ${{ github.workspace }}/haxall
         run: |
           export PATH="${{ github.workspace }}/haxall/bin:$PATH"
-          xeto build cx cx.requirements cx.verification cx.issues cx.content 2>&1 | tee build.log
+          xeto build cx cx.requirements cx.verification cx.issues cx.measures cx.sequences cx.content 2>&1 | tee build.log
           if grep -q "^ERROR:" build.log; then
             echo "::error::xeto build reported errors"
             exit 1
           fi
 
-      - name: Verify all 5 xetolibs were built
+      - name: Verify all 7 xetolibs were built
         run: |
           MISSING=""
-          for lib in cx cx.requirements cx.verification cx.issues cx.content; do
+          for lib in cx cx.requirements cx.verification cx.issues cx.measures cx.sequences cx.content; do
             if ! ls haxall/lib/xeto/$lib/$lib-*.xetolib 1>/dev/null 2>&1; then
               MISSING="$MISSING $lib"
             fi
@@ -60,7 +60,7 @@ jobs:
             echo "::error::Missing xetolibs:$MISSING"
             exit 1
           fi
-          echo "All 5 xetolibs built successfully"
+          echo "All 7 xetolibs built successfully"
 
       - name: Upload xetolib artifacts
         uses: actions/upload-artifact@v4

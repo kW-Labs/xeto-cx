@@ -1,6 +1,6 @@
 pragma: Lib <
-  doc: "Open commissioning ontology — seed reference content as instance data: an example OPR requirement set across all three verification planes, an AHU installation checklist, an FPT script, and the EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual). Illustrative, not a complete content library."
-  version: "0.2.0"
+  doc: "Open commissioning ontology — seed reference content as instance data: an example OPR requirement set across all three verification planes (including a room-matrix criteria set), an AHU installation checklist, an FPT script, a Guideline 36 sequence application, an EBCx measure with savings, and the EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual). Illustrative, not a complete content library."
+  version: "0.3.0"
   depends: {
     { lib: "sys" }
     { lib: "hx" }
@@ -8,6 +8,8 @@ pragma: Lib <
     { lib: "cx.requirements" }
     { lib: "cx.verification" }
     { lib: "cx.issues" }
+    { lib: "cx.measures" }
+    { lib: "cx.sequences" }
   }
   org: {
     dis: "Open Cx Ontology (stewarded by kW Engineering)"
