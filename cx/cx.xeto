@@ -388,6 +388,74 @@ AcceptanceRecord: Dict {
   attestationRef: Ref?         // of: cx.verification::Attestation — the accepting signoff
 }
 
+// One member of the commissioning team roster — the Cx Plan's team and
+// lines-of-communication table as records. Forming the team is the first
+// Predesign task of the Guideline 0 process (Figure B-1), and the roster
+// is required Cx Plan content (202 section 7.2.3).
+CxTeamMember: Dict {
+  cxTeamMember
+  cxProjectRef: Ref            // of: CxProject
+  name: Str
+  org: Str?
+  role: CxRole?
+  email: Str?
+  phone: Str?
+  notes: Str?
+}
+
+// Kind of facility change that triggers ongoing-Cx re-evaluation
+// (Guideline 0 Figure B-1: change of use, or system or assembly;
+// plus the annual-benchmarking path)
+FacilityChangeKind: Choice
+
+// Change in how the facility or a space is used
+ChangeOfUse: FacilityChangeKind { changeOfUse }
+
+// Change to a building system
+ChangeOfSystem: FacilityChangeKind { changeOfSystem }
+
+// Change to a building assembly
+ChangeOfAssembly: FacilityChangeKind { changeOfAssembly }
+
+// Benchmarking or performance finding prompting re-evaluation
+PerformanceFinding: FacilityChangeKind { performanceFinding }
+
+// Evaluated impact of a facility change on the requirements baseline
+// (Figure B-1's decision: change the OPR/CFR, change the BOD, or no change)
+FacilityChangeDisposition: Choice
+
+// Requirements document must be amended
+ChangesOpr: FacilityChangeDisposition { changesOpr }
+
+// Basis of Design must be amended
+ChangesBod: FacilityChangeDisposition { changesBod }
+
+// Neither document affected
+NoChangeRequired: FacilityChangeDisposition { noChangeRequired }
+
+// One facility change and its evaluated disposition — the event record
+// behind the ongoing-Cx loop of Guideline 0 Figure B-1: a change of use,
+// system, or assembly (or a benchmarking finding) is evaluated against
+// the OPR/CFR and BOD, dispositioned, and the follow-on updates (record
+// drawings, Systems Manual, training) are tracked to closure. This is
+// the record of WHY a CFR version changed.
+FacilityChange: Dict {
+  facilityChange
+  dis: Str
+  siteRef: Ref
+  ocxProgramRef: Ref?          // of: OcxProgram
+  changeKind: FacilityChangeKind?
+  description: Str?
+  occurredAt: Date?
+  evaluatedAt: Date?
+  disposition: FacilityChangeDisposition?
+  requirementRefs: List?       // of: Ref — requirements affected
+  recordDrawingsUpdated: Marker?
+  systemsManualUpdated: Marker?
+  trainingDelivered: Marker?
+  notes: Str?
+}
+
 // Ongoing commissioning program — the continuous counterpart of CxProject.
 // Facility-anchored with no end date: where a project is a bounded
 // engagement, a program persists to verify the facility against its
@@ -433,6 +501,12 @@ CxEntity: Dict <abstract> {
 
   // Ongoing commissioning program
   *ocxProgram: Marker
+
+  // Commissioning team roster member
+  *cxTeamMember: Marker
+
+  // Facility change event and its disposition
+  *facilityChange: Marker
 
   // Typed Systems Manual index row
   *systemsManualEntry: Marker

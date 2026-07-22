@@ -16,6 +16,13 @@
   dis: "Example Office Building"
 }
 
+@ex-team-cxp: CxTeamMember {
+  cxProjectRef: @ex-project
+  name: "Example CxP Lead"
+  org: "Example Commissioning Provider"
+  cxpRole
+}
+
 @ex-opr: Opr {
   dis: "Example OPR v1.0"
   cxProjectRef: @ex-project
@@ -530,6 +537,22 @@
   planRef: @ex-ocx-plan
   startedAt: Date "2026-07-01"
   reviewCadence: Cadence "quarterly"
+}
+
+// Facility change event — the OCx loop of Guideline 0 Figure B-1: a use
+// change is evaluated against the CFR, dispositioned, and follow-on
+// updates tracked to closure
+@ex-change-tenant: FacilityChange {
+  dis: "Second-floor tenant fit-out: open office to conference center"
+  siteRef: @ex-site
+  ocxProgramRef: @ex-ocx
+  changeOfUse
+  description: "Occupancy density triples in the affected zones; ventilation and cooling requirements re-evaluated against the CFR."
+  occurredAt: Date "2026-07-10"
+  evaluatedAt: Date "2026-07-15"
+  changesOpr
+  requirementRefs: { @ex-req-space-temp-cfr }
+  systemsManualUpdated
 }
 
 // ── Verification results — one per outcome ───────────────────────────────

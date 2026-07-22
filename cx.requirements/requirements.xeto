@@ -195,7 +195,7 @@ Requirement: Dict {
   requirement
   dis: Str
   docRef: Ref                  // of: RequirementsDoc — the document version that owns this requirement
-  sourceDocRef: Ref?           // provenance: source document this requirement was extracted from
+  sourceDocRef: Ref?           // provenance: project source document this requirement originates from
   sourcePage: Number?          // provenance: page within sourceDocRef
   citation: Str?               // provenance: external standard/code clause, e.g. "ASHRAE 170-2013 Table 7-1"
   reqId: Str                   // human-stable id, e.g. "OPR-3.2.1" — survives versioning
