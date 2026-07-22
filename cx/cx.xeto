@@ -116,6 +116,29 @@ CxRoleOwner: CxRole { ownerRole }
 // Facility manager or building operator
 CxRoleFacilityManager: CxRole { facilityManagerRole }
 
+// Commissioning party as an enumerated scalar value. The value-typed
+// counterpart of the CxRole choice: use CxRole when a record IS tagged
+// with a role (one choice marker per record); use CxParty when a field's
+// VALUE is a party — e.g. cx.issues::CxIssue.ballInCourt, which must
+// coexist with the assignedRole choice on the same record. Keys mirror
+// the CxRole vocabulary.
+CxParty: Enum {
+  owner                // building owner or owner's representative
+  cxp                  // Commissioning Provider
+  designer             // design professional / engineer of record
+  constructionManager  // construction manager
+  gc                   // general contractor
+  mechanical           // mechanical contractor
+  sheetMetal           // sheet metal contractor
+  controls             // controls/BAS contractor
+  electrical           // electrical contractor
+  plumbing             // plumbing contractor
+  tab                  // testing, adjusting, and balancing contractor
+  vendor               // manufacturer, supplier, or vendor
+  facilityManager      // facility manager or building operator
+  occupant             // building occupant or user representative
+}
+
 // Trade discipline for row-level tagging and filtering of verification work
 CxDiscipline: Choice
 

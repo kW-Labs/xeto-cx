@@ -577,6 +577,7 @@
   analyticsFault
   priorityMedium
   issueClosed
+  ballInCourt: CxParty "owner"
   requirementRef: @ex-req-space-temp
   sourceAnalytics
   sourceRef: @ex-vr-fail
