@@ -139,6 +139,17 @@ CxParty: Enum {
   occupant             // building occupant or user representative
 }
 
+// Recurrence cadence as an enumerated scalar value — review cycles,
+// reporting periods, and ongoing-verification frequency
+Cadence: Enum {
+  weekly
+  monthly
+  quarterly
+  semiannual
+  annual
+  continuous   // evaluated continuously, e.g. analytics-driven OCx checks
+}
+
 // Trade discipline for row-level tagging and filtering of verification work
 CxDiscipline: Choice
 
@@ -390,7 +401,7 @@ OcxProgram: Dict {
   cfrRef: Ref?                 // of: cx.requirements::Cfr
   planRef: Ref?                // of: CxPlan — the OCx Plan the Cx Plan transitioned to (202 Foreword)
   startedAt: Date?
-  reviewCadence: Str?          // e.g. "quarterly"
+  reviewCadence: Cadence?
 }
 
 // Abstract base declaring the commissioning entity-marker vocabulary as

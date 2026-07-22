@@ -171,7 +171,7 @@
 
 @ex-req-training-c: ProcessRequirement {
   requirementRef: @ex-req-training
-  deliverableType: "training"
+  trainingDeliverable
   turnoverPhase
   facilityManagerRole
 }
@@ -529,7 +529,7 @@
   cfrRef: @ex-cfr-2
   planRef: @ex-ocx-plan
   startedAt: Date "2026-07-01"
-  reviewCadence: "quarterly"
+  reviewCadence: Cadence "quarterly"
 }
 
 // ── Verification results — one per outcome ───────────────────────────────

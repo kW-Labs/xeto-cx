@@ -105,6 +105,40 @@ PositivePressure: PressureRelationship { positivePressure }
 NegativePressure: PressureRelationship { negativePressure }
 NeutralPressure: PressureRelationship { neutralPressure }
 
+// Kind of deliverable an attestation-plane requirement produces. Projects
+// extend by subtyping the choice for owner-specific deliverables.
+DeliverableType: Choice
+
+// Owner personnel training
+TrainingDeliverable: DeliverableType { trainingDeliverable }
+
+// O&M manual or manufacturer O&M data
+OmManualDeliverable: DeliverableType { omManualDeliverable }
+
+// Warranty document
+WarrantyDeliverable: DeliverableType { warrantyDeliverable }
+
+// Certificate or certification, e.g. chlorination, NETA
+CertificateDeliverable: DeliverableType { certificateDeliverable }
+
+// Record drawings / as-builts
+RecordDrawingsDeliverable: DeliverableType { recordDrawingsDeliverable }
+
+// Submitted report, e.g. TAB report, test results
+ReportDeliverable: DeliverableType { reportDeliverable }
+
+// Disposition of a design review comment
+CommentDisposition: Choice
+
+// Raised, awaiting design team response
+DispositionOpen: CommentDisposition { dispositionOpen }
+
+// Addressed and back-checked
+DispositionResolved: CommentDisposition { dispositionResolved }
+
+// Withdrawn by the reviewer
+DispositionWithdrawn: CommentDisposition { dispositionWithdrawn }
+
 // Designer's disposition of a requirement in the BOD
 BodResponseStatus: Choice
 
@@ -225,7 +259,7 @@ PerformanceCriterion: Dict {
 ProcessRequirement: Dict {
   processRequirement
   requirementRef: Ref          // of: Requirement
-  deliverableType: Str?        // e.g. training, omManual, warrantyLetter, cert
+  deliverableType: DeliverableType?
   gatePhase: CxPhase?          // phase gate this requirement blocks
   attestingRole: CxRole?       // who signs
 }
@@ -256,7 +290,7 @@ DesignReviewComment: Dict {
   requirementRefs: List?       // of: Ref
   phase: CxPhase
   comment: Str
-  disposition: Str?            // open, resolved, withdrawn
+  disposition: CommentDisposition?
 }
 
 // Owner-accepted variance from a requirement (202 Appendix O(a)): a formal,
