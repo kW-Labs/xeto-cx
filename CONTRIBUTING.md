@@ -7,18 +7,20 @@ intent to upstream the core as `ph.cx`.
 ## Repository Structure
 
 ```
-cx/                 → root vocabulary (phases, roles, disciplines, planes, modes, CxProject, OcxProgram, document taxonomy, tag vocabulary)
+cx/                 → root vocabulary (phases, roles, disciplines, planes, modes, CxProject, OcxProgram, document taxonomy, acceptance records, tag vocabulary)
 cx.requirements/    → OPR/CFR/BOD contract layer + traceability spine
-cx.verification/    → verification activities, checklists, tests, attestations
+cx.verification/    → verification activities, checklists, tests, training, attestations
 cx.issues/          → deficiency + observation interchange shapes
+cx.measures/        → improvement measures + savings (EBCx findings economics)
+cx.sequences/       → control sequences of operation as commissioning artifacts
 cx.content/         → seed reference content (instance data)
 ```
 
 ## Dependency Rules
 
-- All libs depend on `sys` + `hx`. The `hx` dep exists solely because the `hxSysOnly` lib-meta tag (which lets these libs load boot-basis in Haxall/SkySpark, available to every project with zero per-project enablement) is *defined by* the hx lib — same pattern as `kw.ph` 5.1.0. It is expected to drop away if/when the core upstreams into the `ph.*` family.
+- All libs depend on `sys` + `hx`. The `hx` dep exists solely because the `hxSysOnly` lib-meta tag (which lets these libs load boot-basis in Haxall/SkySpark, available to every project with zero per-project enablement) is *defined by* the hx lib. It is expected to drop away if/when the core upstreams into the `ph.*` family.
 - **No dep on `ph`**: ph is not boot-basis loadable, and a `hxSysOnly` lib with a non-boot dep breaks at boot. All ph spec references are qname *strings* (`targetSpec: "ph::Ahu"`), resolved at project-namespace level by consuming tools — never structural imports.
-- Family libs additionally depend on `cx` (never on each other, except `cx.content` which depends on `cx`, `cx.requirements`, `cx.verification`, `cx.issues`)
+- Family libs additionally depend on `cx` (never on each other, except `cx.content` which depends on `cx`, `cx.requirements`, `cx.verification`, `cx.issues`, `cx.measures`, `cx.sequences`)
 - **Never** depend on vendor libs (`kw.*` or anyone else's) — this repo must stand alone
 
 ## Xeto Conventions (verified against SkySpark 4.0.5 / Haxall 4.0.5 toolchain)
@@ -45,10 +47,10 @@ Copy libs into a SkySpark/Haxall source tree and compile:
 
 ```bash
 SS=/path/to/skyspark-4.0.5
-for d in cx cx.requirements cx.verification cx.issues cx.content; do
+for d in cx cx.requirements cx.verification cx.issues cx.measures cx.sequences cx.content; do
   rm -rf "$SS/src/xeto/$d"; cp -r "$d" "$SS/src/xeto/$d"
 done
-cd "$SS" && bin/xeto build cx cx.requirements cx.verification cx.issues cx.content
+cd "$SS" && bin/xeto build cx cx.requirements cx.verification cx.issues cx.measures cx.sequences cx.content
 ```
 
 Clean output is `Compiled xetolib [...]` per lib; any `ERROR:` line is a failure.

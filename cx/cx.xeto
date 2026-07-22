@@ -3,7 +3,11 @@
 // with delivery-method-specific phases via normal xeto subtyping.
 CxPhase: Choice
 
-// OPR / BOD development and design reviews
+// OPR development, Cx scoping, and initial Cx Plan (Guideline 0 section 5;
+// 202 requires the OPR before the architectural program, 202 section 6.2.1)
+CxPhasePredesign: CxPhase { predesignPhase }
+
+// BOD development and design reviews
 CxPhaseDesign: CxPhase { designPhase }
 
 // Equipment submittal review
@@ -15,7 +19,7 @@ CxPhaseInstallation: CxPhase { installationPhase }
 // Pre-verification testing (contractor-executed)
 CxPhasePvt: CxPhase { pvtPhase }
 
-// Functional performance testing (CxA-witnessed)
+// Functional performance testing (CxP-witnessed)
 CxPhaseFpt: CxPhase { fptPhase }
 
 // Owner training
@@ -32,6 +36,10 @@ CxPhaseClosed: CxPhase { closedPhase }
 
 // EBCx: scoping, CFR development or review, OCx planning
 CxPhasePlanning: CxPhase { planningPhase }
+
+// EBCx: screening and initial assessment — cursory walk-through, utility and
+// EUI analysis, order-of-magnitude findings, go/no-go decision
+CxPhaseInitialAssessment: CxPhase { initialAssessmentPhase }
 
 // EBCx: site investigation, testing, monitoring diagnostics
 CxPhaseInvestigation: CxPhase { investigationPhase }
@@ -62,8 +70,28 @@ CxTypeReCx: CxProjectType { reCxProject }
 // Party responsible for a commissioning task, answer, or signoff
 CxRole: Choice
 
-// Commissioning Authority — independent verification and signoff
-CxRoleCxa: CxRole { cxaRole }
+// Commissioning Provider (CxP) — independent verification and signoff.
+// 202-2018 Addendum a replaced the former term "Commissioning Authority
+// (CxA)" with CxP; this spec follows the current standard.
+CxRoleCxp: CxRole { cxpRole }
+
+// Design professional — architect or design-team member; authors the BOD
+// and responds to design review comments (202 sections 8 and 10.2.3)
+CxRoleDesigner: CxRole { designerRole }
+
+// Engineer of Record — holds the approval authority on design documents
+// and submittals, distinct from the CxP's commissionability review
+CxRoleEor: CxRole { eorRole }
+
+// Construction manager — schedule, coordination, and acceptance flow
+CxRoleConstructionManager: CxRole { constructionManagerRole }
+
+// Manufacturer, supplier, or vendor — equipment data, start-up, factory
+// training (202 section 9; Guideline 0 Appendix F)
+CxRoleVendor: CxRole { vendorRole }
+
+// Building occupant or user representative
+CxRoleOccupant: CxRole { occupantRole }
 
 // Controls/BAS contractor — DDC, sensors, programming
 CxRoleControls: CxRole { controlsRole }
@@ -92,6 +120,41 @@ CxRoleOwner: CxRole { ownerRole }
 // Facility manager or building operator
 CxRoleFacilityManager: CxRole { facilityManagerRole }
 
+// Commissioning party as an enumerated scalar value. The value-typed
+// counterpart of the CxRole choice: use CxRole when a record IS tagged
+// with a role (one choice marker per record); use CxParty when a field's
+// VALUE is a party — e.g. cx.issues::CxIssue.ballInCourt, which must
+// coexist with the assignedRole choice on the same record. Keys mirror
+// the CxRole vocabulary.
+CxParty: Enum {
+  owner                // building owner or owner's representative
+  cxp                  // Commissioning Provider
+  designer             // design professional / architect
+  eor                  // Engineer of Record
+  constructionManager  // construction manager
+  gc                   // general contractor
+  mechanical           // mechanical contractor
+  sheetMetal           // sheet metal contractor
+  controls             // controls/BAS contractor
+  electrical           // electrical contractor
+  plumbing             // plumbing contractor
+  tab                  // testing, adjusting, and balancing contractor
+  vendor               // manufacturer, supplier, or vendor
+  facilityManager      // facility manager or building operator
+  occupant             // building occupant or user representative
+}
+
+// Recurrence cadence as an enumerated scalar value — review cycles,
+// reporting periods, and ongoing-verification frequency
+Cadence: Enum {
+  weekly
+  monthly
+  quarterly
+  semiannual
+  annual
+  continuous   // evaluated continuously, e.g. analytics-driven OCx checks
+}
+
 // Trade discipline for row-level tagging and filtering of verification work
 CxDiscipline: Choice
 
@@ -114,6 +177,34 @@ PerformancePlane: VerificationPlane { performancePlane }
 
 // Verified by human signoff with evidence
 AttestationPlane: VerificationPlane { attestationPlane }
+
+// Occupancy mode a criterion or setpoint applies in. Occupied, standby,
+// and unoccupied are the modes design standards state per-space criteria
+// against (e.g. ASHRAE 170-2013 Table 7-1 standby columns). Projects may
+// extend with additional operating modes (warm-up, setback) by subtyping.
+OccupancyMode: Choice
+
+// Space is occupied and serving its function
+OccupiedMode: OccupancyMode { occupiedMode }
+
+// Space is temporarily vacant but ready for prompt return to use
+StandbyMode: OccupancyMode { standbyMode }
+
+// Space is unoccupied per schedule
+UnoccupiedMode: OccupancyMode { unoccupiedMode }
+
+// Impact area of an issue or accepted variance. The enumeration of
+// 202-2018 Appendix O(a) — environmental, health, safety, comfort, energy,
+// O&M cost — plus mission (Guideline 0 section 7.2.15.1d).
+CxImpactArea: Choice
+
+ImpactEnvironmental: CxImpactArea { envImpact }
+ImpactHealth: CxImpactArea { healthImpact }
+ImpactSafety: CxImpactArea { safetyImpact }
+ImpactComfort: CxImpactArea { comfortImpact }
+ImpactEnergy: CxImpactArea { energyImpact }
+ImpactOmCost: CxImpactArea { omCostImpact }
+ImpactMission: CxImpactArea { missionImpact }
 
 // How a verification step obtains its actual value
 VerificationMode: Choice
@@ -150,7 +241,7 @@ CxDocDraft: CxDocStatus { docDraft }
 // Version stamped; machine-checkable criteria compiled
 CxDocPublished: CxDocStatus { docPublished }
 
-// Attested by owner/CxA; immutable
+// Attested by owner/CxP; immutable
 CxDocSignedOff: CxDocStatus { docSignedOff }
 
 // Replaced by a later version
@@ -167,16 +258,31 @@ CxDoc: Dict <abstract> {
   version: Str?
   status: CxDocStatus?
   publishedAt: DateTime?
+  supersedesRef: Ref?          // of: CxDoc — prior version this document replaces;
+                               // makes the amendment history a walkable graph
   fileRef: Ref?                // underlying file/blob record, when one exists
 }
 
 // Commissioning Process Plan (202 section 7): organization, schedule,
 // resources, and documentation requirements of the Cx. "The Cx Plan may
 // transition to an Ongoing Cx (OCx) Plan" (202 Foreword) — the OCx
-// continuation is referenced from OcxProgram.planRef.
+// continuation is referenced from OcxProgram.planRef. cxProjectRef is
+// set for project-born plans; a facility-anchored OCx Plan re-issued
+// under a standing program may stand alone on siteRef.
 CxPlan: CxDoc {
   cxPlan
-  cxProjectRef: Ref            // of: CxProject
+  cxProjectRef: Ref?           // of: CxProject
+}
+
+// Training plan (202 section 3): "a written document that details the
+// expectations, schedule, duration, and deliverables for Cx Activities
+// related to training of project operations and maintenance personnel,
+// users, and occupants." Contents per 202 section 15.2.1; accepted by
+// the Owner before instruction begins (202 section 15.3.1). Delivered
+// sessions are cx.verification::TrainingSession records.
+TrainingPlan: CxDoc {
+  trainingPlan
+  cxProjectRef: Ref?           // of: CxProject
 }
 
 // Systems Manual (202 section 14, Appendix L): system-focused composite
@@ -199,6 +305,179 @@ FacilityGuide: CxDoc {
   systemsManualRef: Ref?       // of: SystemsManual
 }
 
+// Part of the Systems Manual a document is indexed under. The six-part
+// taxonomy shared by 202 section 14.2.3 and Guideline 1.4 section 4.3.2.
+SmPart: Choice
+
+// Executive summary — overview vs OPR/CFR, contents map
+SmPartExecSummary: SmPart { smExecSummary }
+
+// Facility design and construction — OPR/CFR, BOD, drawings, specs, record docs
+SmPartDesignConstruction: SmPart { smDesignConstruction }
+
+// Building, systems, and assemblies information — submittals, coordination
+// drawings, manufacturer O&M data, warranties, contacts
+SmPartSystemsInfo: SmPart { smSystemsInfo }
+
+// Facility operations — Facility Guide, maintenance, OCx records, utility/M&V
+SmPartFacilityOps: SmPart { smFacilityOps }
+
+// Training plans, materials, and records
+SmPartTraining: SmPart { smTraining }
+
+// Commissioning report — plans, review reports, tests, progress reports, issue logs
+SmPartCxReport: SmPart { smCxReport }
+
+// One typed index row of a Systems Manual: which living document record
+// serves which part, ordered by spec section, per system where applicable.
+// Guideline 1.4 endorses indexing over embedding ("the location shall be
+// noted"); this is the machine form of that index. An entry carries at
+// least one of docRef (a tracked record) or location (a document held
+// outside the record system).
+SystemsManualEntry: Dict {
+  systemsManualEntry
+  systemsManualRef: Ref        // of: SystemsManual
+  docRef: Ref?                 // of: CxDoc — the living record being indexed
+  smPart: SmPart
+  specSection: Str?            // MasterFormat ordering key, e.g. "23 73 00"
+  systemRef: Ref?              // set for per-system entries; absent = facility-level
+  location: Str?               // for documents held outside the record system
+}
+
+// Commissioning report (202 section 17): preliminary at phase close, final
+// marker set for the end-of-project report (17.3 a-g). Guideline 0
+// Appendix G treats the Cx Plan as evolving into this report — planRef
+// preserves that lineage while keeping the documents distinct.
+CxReport: CxDoc {
+  cxReport
+  cxProjectRef: Ref            // of: CxProject
+  phase: CxPhase?
+  final: Marker?               // 202 section 17.2.2 final report
+  planRef: Ref?                // of: CxPlan
+}
+
+// Recurring Cx progress report (202 section 3, sections 5.2.15/12.3.1/17.2.1,
+// Appendix O), including the End-of-Warranty Cx Progress Report named as
+// the postoccupancy deliverable in 202 section 4.2.2.
+CxProgressReport: CxDoc {
+  cxProgressReport
+  cxProjectRef: Ref            // of: CxProject
+  periodStart: Date?
+  periodEnd: Date?
+  endOfWarranty: Marker?
+}
+
+// Acceptance Plan (Guideline 0 Appendix H): identifies the deliverables the
+// Owner formally accepts in each phase and the acceptance steps for each.
+AcceptancePlan: CxDoc {
+  acceptancePlan
+  cxProjectRef: Ref            // of: CxProject
+}
+
+// State of one formal acceptance
+AcceptanceStatus: Choice
+
+// Awaiting recommendation
+AcceptancePending: AcceptanceStatus { acceptancePending }
+
+// CxP has recommended acceptance to the Owner (Guideline 0 H1.d)
+AcceptanceRecommended: AcceptanceStatus { acceptanceRecommended }
+
+// Owner has formally accepted
+AcceptanceAccepted: AcceptanceStatus { acceptanceAccepted }
+
+// Accepted with documented conditions
+AcceptanceConditional: AcceptanceStatus { acceptanceConditional }
+
+// Owner rejected; deliverable returns for rework
+AcceptanceRejected: AcceptanceStatus { acceptanceRejected }
+
+// One formal acceptance of a deliverable. 202 makes Owner acceptance a
+// required step for every major deliverable (section 4.3 and the x.3
+// acceptance subsections of sections 6-17); Guideline 0 Appendix H defines
+// the recommend-then-accept flow this record captures. Who recommended and
+// who accepted are carried by the referenced attestations, which each
+// state their role.
+AcceptanceRecord: Dict {
+  acceptanceRecord
+  cxProjectRef: Ref            // of: CxProject
+  phase: CxPhase?
+  subjectRef: Ref?             // of: CxDoc or VerificationActivity being accepted
+  subjectSpec: Str?            // non-record subjects, e.g. "seasonal testing"
+  status: AcceptanceStatus
+  recommendedAt: DateTime?     // CxP recommendation to the Owner (Guideline 0 H1.d)
+  acceptedAt: DateTime?
+  attestationRef: Ref?         // of: cx.verification::Attestation — the accepting signoff
+}
+
+// One member of the commissioning team roster — the Cx Plan's team and
+// lines-of-communication table as records. Forming the team is the first
+// Predesign task of the Guideline 0 process (Figure B-1), and the roster
+// is required Cx Plan content (202 section 7.2.3).
+CxTeamMember: Dict {
+  cxTeamMember
+  cxProjectRef: Ref            // of: CxProject
+  name: Str
+  org: Str?
+  role: CxRole?
+  email: Str?
+  phone: Str?
+  notes: Str?
+}
+
+// Kind of facility change that triggers ongoing-Cx re-evaluation
+// (Guideline 0 Figure B-1: change of use, or system or assembly;
+// plus the annual-benchmarking path)
+FacilityChangeKind: Choice
+
+// Change in how the facility or a space is used
+ChangeOfUse: FacilityChangeKind { changeOfUse }
+
+// Change to a building system
+ChangeOfSystem: FacilityChangeKind { changeOfSystem }
+
+// Change to a building assembly
+ChangeOfAssembly: FacilityChangeKind { changeOfAssembly }
+
+// Benchmarking or performance finding prompting re-evaluation
+PerformanceFinding: FacilityChangeKind { performanceFinding }
+
+// Evaluated impact of a facility change on the requirements baseline
+// (Figure B-1's decision: change the OPR/CFR, change the BOD, or no change)
+FacilityChangeDisposition: Choice
+
+// Requirements document must be amended
+ChangesOpr: FacilityChangeDisposition { changesOpr }
+
+// Basis of Design must be amended
+ChangesBod: FacilityChangeDisposition { changesBod }
+
+// Neither document affected
+NoChangeRequired: FacilityChangeDisposition { noChangeRequired }
+
+// One facility change and its evaluated disposition — the event record
+// behind the ongoing-Cx loop of Guideline 0 Figure B-1: a change of use,
+// system, or assembly (or a benchmarking finding) is evaluated against
+// the OPR/CFR and BOD, dispositioned, and the follow-on updates (record
+// drawings, Systems Manual, training) are tracked to closure. This is
+// the record of WHY a CFR version changed.
+FacilityChange: Dict {
+  facilityChange
+  dis: Str
+  siteRef: Ref
+  ocxProgramRef: Ref?          // of: OcxProgram
+  changeKind: FacilityChangeKind?
+  description: Str?
+  occurredAt: Date?
+  evaluatedAt: Date?
+  disposition: FacilityChangeDisposition?
+  requirementRefs: List?       // of: Ref — requirements affected
+  recordDrawingsUpdated: Marker?
+  systemsManualUpdated: Marker?
+  trainingDelivered: Marker?
+  notes: Str?
+}
+
 // Ongoing commissioning program — the continuous counterpart of CxProject.
 // Facility-anchored with no end date: where a project is a bounded
 // engagement, a program persists to verify the facility against its
@@ -212,7 +491,7 @@ OcxProgram: Dict {
   cfrRef: Ref?                 // of: cx.requirements::Cfr
   planRef: Ref?                // of: CxPlan — the OCx Plan the Cx Plan transitioned to (202 Foreword)
   startedAt: Date?
-  reviewCadence: Str?          // e.g. "quarterly"
+  reviewCadence: Cadence?
 }
 
 // Abstract base declaring the commissioning entity-marker vocabulary as
@@ -244,6 +523,27 @@ CxEntity: Dict <abstract> {
 
   // Ongoing commissioning program
   *ocxProgram: Marker
+
+  // Commissioning team roster member
+  *cxTeamMember: Marker
+
+  // Facility change event and its disposition
+  *facilityChange: Marker
+
+  // Typed Systems Manual index row
+  *systemsManualEntry: Marker
+
+  // Commissioning report document
+  *cxReport: Marker
+
+  // Recurring Cx progress report document
+  *cxProgressReport: Marker
+
+  // Acceptance Plan document
+  *acceptancePlan: Marker
+
+  // One formal deliverable acceptance
+  *acceptanceRecord: Marker
 
   // Result of one verification check run
   *verificationResult: Marker
@@ -314,9 +614,48 @@ CxEntity: Dict <abstract> {
   // Human signoff with evidence
   *attestation: Marker
 
+  // Owner training plan document (202 section 3)
+  *trainingPlan: Marker
+
+  // One delivered training session
+  *trainingSession: Marker
+
+  // One attendee record for a training session
+  *trainingAttendance: Marker
+
+  // Per-step observed result of a test run
+  *testStepResult: Marker
+
+  // Submittal review activity
+  *submittalReview: Marker
+
   // Commissioning deficiency
   *cxIssue: Marker
 
   // Field finding, lighter than an issue
   *observation: Marker
+
+  // Improvement measure identified by commissioning
+  *cxMeasure: Marker
+
+  // Savings estimate for a measure, per category and basis
+  *savingsEstimate: Marker
+
+  // Sequence-of-operation source document reference
+  *sequenceSource: Marker
+
+  // Citable section of a sequence source
+  *sequenceSection: Marker
+
+  // Atomic sequence-of-operation statement
+  *sequenceStatement: Marker
+
+  // Sequence parameter — the fill-in contract
+  *sequenceParam: Marker
+
+  // Project application of a sequence to equipment
+  *sequenceInstance: Marker
+
+  // Resolved value of a sequence parameter for an instance
+  *sequenceParamValue: Marker
 }

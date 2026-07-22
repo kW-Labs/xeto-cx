@@ -1,0 +1,125 @@
+// Kind of improvement measure
+CxMeasureType: Choice
+
+// Energy conservation measure — saves energy or demand
+MeasureEcm: CxMeasureType { ecmMeasure }
+
+// Facility improvement measure — non-energy operational improvement
+MeasureFim: CxMeasureType { fimMeasure }
+
+// Simple repair — low/no-cost fix executed by O&M staff
+MeasureSimpleRepair: CxMeasureType { simpleRepairMeasure }
+
+// Capital measure — requires capital planning and budgeting
+MeasureCapital: CxMeasureType { capitalMeasure }
+
+// Scope-of-work complexity tier for implementation
+CxSowClass: Choice
+
+SowSimple: CxSowClass { sowSimple }
+SowMedium: CxSowClass { sowMedium }
+SowComplex: CxSowClass { sowComplex }
+
+// Lifecycle of a measure from identification through verified savings:
+// identified -> estimated -> proposed -> approved | rejected | deferred
+// -> implementing -> implemented -> verified
+CxMeasureStatus: Choice
+
+// Found during investigation; not yet costed
+MeasureIdentified: CxMeasureStatus { measureIdentified }
+
+// Cost and savings estimated
+MeasureEstimated: CxMeasureStatus { measureEstimated }
+
+// Presented to the owner for selection
+MeasureProposed: CxMeasureStatus { measureProposed }
+
+// Owner selected for implementation
+MeasureApproved: CxMeasureStatus { measureApproved }
+
+// Owner declined
+MeasureRejected: CxMeasureStatus { measureRejected }
+
+// Parked for a later budget cycle or season
+MeasureDeferred: CxMeasureStatus { measureDeferred }
+
+// Implementation in progress
+MeasureImplementing: CxMeasureStatus { measureImplementing }
+
+// Implementation complete; savings not yet verified
+MeasureImplemented: CxMeasureStatus { measureImplemented }
+
+// Post-implementation savings verified
+MeasureVerified: CxMeasureStatus { measureVerified }
+
+// Category a savings estimate is stated in — the fuel/benefit streams of
+// an EBCx master list of findings (electric energy, fossil, demand, water,
+// plus non-energy maintenance and operational benefits)
+SavingsCategory: Choice
+
+SavingsElec: SavingsCategory { elecSavings }
+SavingsGas: SavingsCategory { gasSavings }
+SavingsSteam: SavingsCategory { steamSavings }
+SavingsWater: SavingsCategory { waterSavings }
+SavingsDemand: SavingsCategory { demandSavings }
+SavingsMaintenance: SavingsCategory { maintenanceSavings }
+SavingsOperational: SavingsCategory { operationalSavings }
+
+// Basis of a savings figure as it hardens through the process:
+// estimated at investigation, adjusted post-implementation, verified by M&V
+SavingsBasis: Choice
+
+// Engineering estimate during investigation
+BasisEstimated: SavingsBasis { estimatedBasis }
+
+// Adjusted after implementation against pre-implementation trend
+BasisAdjusted: SavingsBasis { adjustedBasis }
+
+// Verified by measurement and verification
+BasisVerified: SavingsBasis { verifiedBasis }
+
+// One improvement measure — the row of the EBCx master list of findings.
+// A measure is the actionable solution to a finding: the originating
+// deficiency stays a cx.issues::CxIssue (findingRef); the measure carries
+// the economics and the owner's selection decision. Savings live in
+// separate per-category SavingsEstimate records pointing back via
+// measureRef.
+CxMeasure: Dict {
+  cxMeasure
+  dis: Str
+  cxProjectRef: Ref?           // of: cx::CxProject
+  siteRef: Ref
+  findingRef: Ref?             // of: cx.issues::CxIssue — originating finding
+  equipRef: Ref?
+  systemRef: Ref?
+  spaceRef: Ref?
+  description: Str?            // the solution/measure as proposed
+  measureType: CxMeasureType?
+  sowClass: CxSowClass?
+  status: CxMeasureStatus
+  costEst: Number?             // estimated implementation cost
+  costActual: Number?          // actual implementation cost
+  incentive: Number?           // utility/program incentive value
+  paybackYears: Number?
+  ownerPriority: Number?       // owner's selection ranking
+  benefits: Str?               // non-quantified benefits narrative
+  risks: Str?                  // drawbacks and risks narrative
+  implementedAt: Date?
+  notes: Str?
+}
+
+// One savings figure for a measure: per category, per basis. A measure
+// typically accumulates estimated records during investigation, then
+// adjusted and verified records as implementation and M&V complete —
+// append-only, so the estimate-to-verified trail is auditable.
+SavingsEstimate: Dict {
+  savingsEstimate
+  measureRef: Ref              // of: CxMeasure
+  category: SavingsCategory
+  basis: SavingsBasis
+  annualQty: Number?           // annual quantity saved, in qtyUnit
+  qtyUnit: Str?                // e.g. "kWh", "therm", "kW", "gal"
+  annualCost: Number?          // annual cost savings
+  method: Str?                 // how the figure was produced, e.g. "trend regression", "IPMVP Option B"
+  estimatedAt: Date?
+}

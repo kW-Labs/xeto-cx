@@ -13,7 +13,7 @@ CxIssueInProgress: CxIssueStatus { issueInProgress }
 // Responsible party claims fixed — awaiting verification
 CxIssueWorkCompleted: CxIssueStatus { issueWorkCompleted }
 
-// With the CxA / owner for verification and approval
+// With the CxP / owner for verification and approval
 CxIssueInReview: CxIssueStatus { issueInReview }
 
 // Verified complete
@@ -71,7 +71,8 @@ CxSourceAnalytics: CxIssueSource { sourceAnalytics }
 
 // Commissioning deficiency or punch-list item. requirementRef closes the
 // traceability loop: a deficiency can state which OPR requirement it
-// violates.
+// violates. Field set covers the issues-and-resolution-log requirements
+// of 202 section 13.2.2 / Appendix K and Guideline 0 section 5.2.5.
 CxIssue: Dict {
   cxIssue
   dis: Str                       // brief summary
@@ -84,11 +85,22 @@ CxIssue: Dict {
   category: CxIssueCategory?
   priority: CxIssuePriority?
   status: CxIssueStatus
-  assignedRole: CxRole?
-  ballInCourt: CxRole?           // who owes the next action (approval nuance lives here, not in extra states)
+  assignedRole: CxRole?          // party responsible for correction
+  ballInCourt: CxParty?          // who owes the next action (approval nuance lives
+                                 // here, not in extra states) — a CxParty enum value
+                                 // because a record carries at most one CxRole choice
+                                 // marker and assignedRole owns it
   requirementRef: Ref?           // of: cx.requirements::Requirement
   sourceType: CxIssueSource?
   sourceRef: Ref?                // record that raised this issue
+  identifiedAt: DateTime?        // when found in the field (App K "date found")
+  dueDate: Date?                 // resolution due date
+  impacts: CxImpactArea? <multiChoice>  // affected impact areas (App K, G0 7.2.15.1d)
+  rootCause: Str?                // possible/confirmed cause (App K)
+  recommendedAction: Str?        // CxP recommendation (App K)
+  correctiveAction: Str?         // actions actually taken (App K)
+  avoidedCost: Number?           // avoided cost of early detection (G0 App G "Calculate Avoided Costs")
+  oprChangeRequired: Marker?     // resolution requires an OPR/CFR amendment -> RequirementVariance
   createdAt: DateTime?
   workCompletedAt: DateTime?
   closedAt: DateTime?

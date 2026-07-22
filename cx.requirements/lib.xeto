@@ -1,6 +1,6 @@
 pragma: Lib <
   doc: "Open commissioning ontology — OPR/CFR/BOD contract layer: requirements, acceptance criteria, and the traceability spine (OPR requirement -> BOD response -> design review -> verification -> acceptance). Includes owner-accepted variance records (202 Appendix O). Candidate for contribution to Project Haystack as ph.cx."
-  version: "0.2.0"
+  version: "0.3.0"
   depends: {
     { lib: "sys" }
     { lib: "hx" }

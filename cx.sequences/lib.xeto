@@ -1,0 +1,14 @@
+pragma: Lib <
+  doc: "Open commissioning ontology — control sequences of operation as commissioning artifacts: citable sources and sections, atomic checkable statements, the parameter fill-in contract, and project instances. Statements compile into requirements and functional test steps; published-guideline prose is referenced by section id, never embedded. Candidate for contribution to Project Haystack as ph.cx."
+  version: "0.3.0"
+  depends: {
+    { lib: "sys" }
+    { lib: "hx" }
+    { lib: "cx" }
+  }
+  org: {
+    dis: "Open Cx Ontology (stewarded by kW Engineering)"
+    uri: "https://github.com/kW-Labs/xeto-cx"
+  }
+  hxSysOnly
+>

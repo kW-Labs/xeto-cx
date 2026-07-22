@@ -66,6 +66,13 @@ VerificationActivity: Dict {
   completionPct: Number?
   disciplines: CxDiscipline? <multiChoice>
   requirementRefs: List?         // of: Ref
+  attemptNo: Number?             // 1 for first run; increments on retest (202 App J5.1c)
+  retestOf: Ref?                 // of: VerificationActivity — the failed run this retests
+  testConditions: Str?           // ambient conditions, setpoints, overrides in effect (G0 7.2.10.1e)
+  deferred: Marker?              // deferred to a later date or season (202 section 16.2.2)
+  seasonal: Marker?              // requires a specific season, e.g. peak cooling
+  prerequisite: Str?             // conditions required before this activity can run
+  scheduledFor: Date?            // planned date for a deferred/seasonal activity
   notes: Str?
 }
 
@@ -92,10 +99,35 @@ PvtTest: VerificationActivity {
   assignedRole: CxRole?
 }
 
-// Functional performance test — CxA-witnessed demonstration of performance
+// Functional performance test — CxP-witnessed demonstration of performance
 FptTest: VerificationActivity {
   fptTest
   scriptRef: Ref?                // of: TestScript
+}
+
+// Outcome of one submittal review
+SubmittalOutcome: Choice
+
+// Submittal conforms to the OPR and BOD
+SubmittalConforms: SubmittalOutcome { submittalConforms }
+
+// Submittal does not conform; summary documents the nonconformance
+SubmittalNonconforming: SubmittalOutcome { submittalNonconforming }
+
+// Requested submittal not yet received (the register's open row)
+SubmittalOutstanding: SubmittalOutcome { submittalOutstanding }
+
+// CxP review of one equipment/system submittal against the OPR and BOD
+// (202 sections 11.2.6 and 11.3.1, Appendix I). The set of these records
+// is the submittal register, including outstanding submittals.
+SubmittalReview: VerificationActivity {
+  submittalReview
+  submittalId: Str?              // contractor's submittal number
+  specSection: Str?              // MasterFormat section, e.g. "23 73 00"
+  receivedAt: Date?
+  reviewedAt: Date?
+  outcome: SubmittalOutcome?
+  nonconformanceSummary: Str?
 }
 
 // Specification-driven contractor test (duct pressure, hydronic pressure,
@@ -173,6 +205,44 @@ TestStepDef: Dict {
   sortOrder: Number?
 }
 
+// Observed result of one test step in one test run. Guideline 0 section
+// 7.2.10.1g requires actual responses recorded per step and says check
+// boxes alone "should be avoided" — this record is that per-step evidence.
+TestStepResult: Dict {
+  testStepResult
+  activityRef: Ref               // of: VerificationActivity — the test run
+  stepRef: Ref                   // of: TestStepDef
+  outcome: CxItemStatus          // pass / fail / na / pending
+  observed: Str?                 // actual response as observed
+  issueRef: Ref?                 // of: cx.issues::CxIssue — raised on failure
+  notes: Str?
+}
+
+// One delivered training session, verified like any other activity —
+// attendance, duration, and instructor are the training record the
+// Systems Manual retains (202 section 14.2.3 part 5; Guideline 1.4 Part 5).
+// The plan document itself is cx::TrainingPlan.
+TrainingSession: VerificationActivity {
+  trainingSession
+  trainingPlanRef: Ref?          // of: cx::TrainingPlan
+  topic: Str?
+  audience: CxRole?              // who is being trained, e.g. facilityManagerRole
+  instructor: Str?
+  durationHr: Number?
+  heldAt: DateTime?
+  factoryTrained: Marker?        // delivered by factory-authorized instructor
+  recordingRef: Ref?             // recorded session artifact (G0 P1.2)
+}
+
+// One attendee's sign-in for a training session (G0 section 7.2.14.3)
+TrainingAttendance: Dict {
+  trainingAttendance
+  sessionRef: Ref                // of: TrainingSession
+  attendee: Str
+  role: CxRole?
+  signedIn: Marker?
+}
+
 // Human signoff with evidence — the attestation-plane primitive, shared by
 // checklists, tests, training, and OPR/BOD signoff. Immutable once created:
 // re-signing appends a new Attestation, the old one stays for audit.
@@ -206,5 +276,6 @@ VerificationResult: Dict {
   actualVal: Obj?              // observed value at check time
   adherencePct: Number?        // performance plane: percent of span within criteria
   evidenceRef: Ref?            // supporting artifact: trend export, photo, report
+  witnessRef: Ref?             // of: Attestation — witness signoff (202 App J5.1c)
   notes: Str?
 }
