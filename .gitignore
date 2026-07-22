@@ -1,2 +1,6 @@
 *.xetolib
 build.log
+
+# agent tooling — never publish
+.claude/
+.superpowers/
