@@ -18,7 +18,7 @@ cx.content/         → seed reference content (instance data)
 
 ## Dependency Rules
 
-- All libs depend on `sys` + `hx`. The `hx` dep exists solely because the `hxSysOnly` lib-meta tag (which lets these libs load boot-basis in Haxall/SkySpark, available to every project with zero per-project enablement) is *defined by* the hx lib — same pattern as `kw.ph` 5.1.0. It is expected to drop away if/when the core upstreams into the `ph.*` family.
+- All libs depend on `sys` + `hx`. The `hx` dep exists solely because the `hxSysOnly` lib-meta tag (which lets these libs load boot-basis in Haxall/SkySpark, available to every project with zero per-project enablement) is *defined by* the hx lib. It is expected to drop away if/when the core upstreams into the `ph.*` family.
 - **No dep on `ph`**: ph is not boot-basis loadable, and a `hxSysOnly` lib with a non-boot dep breaks at boot. All ph spec references are qname *strings* (`targetSpec: "ph::Ahu"`), resolved at project-namespace level by consuming tools — never structural imports.
 - Family libs additionally depend on `cx` (never on each other, except `cx.content` which depends on `cx`, `cx.requirements`, `cx.verification`, `cx.issues`, `cx.measures`, `cx.sequences`)
 - **Never** depend on vendor libs (`kw.*` or anyone else's) — this repo must stand alone
