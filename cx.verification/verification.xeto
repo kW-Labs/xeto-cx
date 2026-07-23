@@ -52,7 +52,8 @@ OutcomeInconclusive: VerificationOutcome { outcomeInconclusive }
 // spaceRef, or siteRef (app-level invariant — commissioning covers systems,
 // envelope, and whole-building work, not only equipment). requirementRefs is
 // the traceability edge back to the OPR: an activity states precisely which
-// requirements it verifies.
+// requirements it verifies. Prerequisites are separate flat
+// ActivityPrerequisite records pointing back via activityRef.
 VerificationActivity: Dict {
   verificationActivity
   dis: Str?
@@ -71,7 +72,6 @@ VerificationActivity: Dict {
   testConditions: Str?           // ambient conditions, setpoints, overrides in effect (G0 7.2.10.1e)
   deferred: Marker?              // deferred to a later date or season (202 section 16.2.2)
   seasonal: Marker?              // requires a specific season, e.g. peak cooling
-  prerequisite: Str?             // conditions required before this activity can run
   scheduledFor: Date?            // planned date for a deferred/seasonal activity
   notes: Str?
 }
@@ -153,6 +153,46 @@ StartUp: VerificationActivity {
 // Testing, adjusting, and balancing verification
 TabTest: VerificationActivity {
   tabTest
+}
+
+// Kind of condition an activity prerequisite expresses
+PrerequisiteKind: Choice
+
+// Another verification activity must complete first
+PrereqActivityComplete: PrerequisiteKind { prereqActivityComplete }
+
+// A system must be operational, e.g. the controls network
+PrereqSystemOperational: PrerequisiteKind { prereqSystemOperational }
+
+// A piece of equipment must be installed, energized, or available
+PrereqEquipAvailable: PrerequisiteKind { prereqEquipAvailable }
+
+// A requirement must already be verified
+PrereqRequirementSatisfied: PrerequisiteKind { prereqRequirementSatisfied }
+
+// External or site condition: weather, permanent power, permit
+PrereqExternal: PrerequisiteKind { prereqExternal }
+
+// One typed prerequisite of a verification activity — the dependency edge
+// that makes activity sequencing a walkable graph. Test procedures have
+// always listed prerequisite conditions as prose; this record is the
+// machine form, so pull planning and critical-path review can read the
+// same graph the commissioning record keeps, and a dependency cycle
+// surfaces as a machine-raisable finding when the schedule is issued
+// instead of a discovery during start-up. A prerequisite with no ref
+// (kind prereqExternal, description only) is still enumerable and joins
+// the graph the moment it gains one.
+ActivityPrerequisite: Dict {
+  activityPrerequisite
+  activityRef: Ref               // of: VerificationActivity — the dependent activity
+  kind: PrerequisiteKind?
+  dependsOnActivityRef: Ref?     // of: VerificationActivity — activity that must complete first
+  dependsOnSystemRef: Ref?       // system that must be operational
+  dependsOnEquipRef: Ref?        // equipment that must be available
+  dependsOnRequirementRef: Ref?  // of: cx.requirements::Requirement — must be verified first
+  description: Str?              // the condition as prose, when no ref applies
+  mitigation: Str?               // planned temporary means when the prerequisite cannot be
+                                 // met in sequence, e.g. temporary network or temporary cooling
 }
 
 // Reusable checklist definition for an equipment type and phase. Items are
