@@ -743,6 +743,36 @@
   observed: "OA damper drove to 100 percent in 90 seconds; chilled water valve remained closed"
 }
 
+// ── Typed activity prerequisites — the dependency graph ──────────────────
+// Activity sequencing as walkable edges: the FPT cannot run until the
+// equipment start-up is complete, and the start-up needs the controls
+// network serving the unit operational. Kind conveys the semantic even
+// before a ref is known; mitigation records the planned temporary means
+// when a prerequisite cannot be met in sequence.
+
+@ex-startup: StartUp {
+  dis: "AHU-1 manufacturer start-up"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  pvtPhase
+  activityPassed
+  procedureCommitted
+  startUpComplete
+}
+
+@ex-prereq-startup-network: ActivityPrerequisite {
+  activityRef: @ex-startup
+  prereqSystemOperational
+  description: "BAS controls network serving AHU-1 operational"
+  mitigation: "Temporary standalone network until the permanent IDF service is energized"
+}
+
+@ex-prereq-fpt-startup: ActivityPrerequisite {
+  activityRef: @ex-fpt-run
+  prereqActivityComplete
+  dependsOnActivityRef: @ex-startup
+}
+
 // ── Systems Manual as an index of living records (202 App L) ─────────────
 
 @ex-facility-guide: FacilityGuide {
