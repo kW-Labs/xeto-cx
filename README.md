@@ -14,7 +14,7 @@ owner keeps, instead of a PDF trapped in a proprietary tool.
 
 ## Status
 
-**Early draft (0.3.0) — seeking collaborators.** These libraries are being
+**Early draft (0.4.0) — seeking collaborators.** These libraries are being
 proven on real commissioning projects. The long-term intent is to contribute
 the core (`cx`, `cx.requirements`) to the
 [Project Haystack](https://project-haystack.org) library family as `ph.cx`,
@@ -32,11 +32,11 @@ not (yet) affiliated with Project Haystack.
 |---|---|---|
 | `cx` | Root vocabulary: phases, roles, disciplines, verification planes/modes, occupancy modes, the CxProject entity, the Standard 202 document taxonomy (incl. Cx reports, Acceptance Plan, Systems Manual index) + OcxProgram, acceptance records, and the tag vocabulary | ph.cx candidate |
 | `cx.requirements` | OPR/CFR/BOD document structures, Requirement (with Guideline 0 content categories and external-standard citations), per-mode acceptance criteria, variance records, and the traceability spine | ph.cx candidate |
-| `cx.verification` | Verification activities: checklists, PVT/FPT test scripts with per-step results, contractor testing, submittal reviews, start-ups, TAB, field observations, training records, attestations | community-open |
+| `cx.verification` | Verification activities: checklists, PVT/FPT test scripts with per-step results, contractor testing, submittal reviews, start-ups, TAB, field observations, training records, attestations, and typed activity prerequisites (the walkable dependency graph) | community-open |
 | `cx.issues` | Deficiency + field-observation interchange shapes, with the Standard 202 issues-log field set | community-open |
 | `cx.measures` | Improvement measures and savings — the EBCx master list of findings as data, with per-category savings that harden from estimated to verified | community-open |
 | `cx.sequences` | Control sequences of operation as commissioning artifacts: citable sources/sections, atomic checkable statements, and the parameter fill-in contract (designer / TAB / controls) | community-open |
-| `cx.content` | Seed reference content as instance data: an example OPR requirement set (incl. a room-matrix criteria set), an AHU installation checklist, an FPT script with step results, a Guideline 36 sequence application, an EBCx measure with savings, and an EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual) | illustrative only |
+| `cx.content` | Seed reference content as instance data: an example OPR requirement set (incl. a room-matrix criteria set), an AHU installation checklist, an FPT script with step results, a start-up with typed prerequisites, a Guideline 36 sequence application, an EBCx measure with savings, and an EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual) | illustrative only |
 
 ## The three verification planes
 
@@ -81,6 +81,14 @@ OPR Requirement ──▶ BOD Response ──▶ Design Review Comment
 The commissioning traceability matrix — a core ASHRAE Guideline 0
 deliverable — becomes a query over this graph instead of a hand-maintained
 spreadsheet.
+
+Verification activities carry a second graph: `ActivityPrerequisite`
+records are typed dependency edges (activity-complete, system-operational,
+equipment-available, requirement-satisfied, or external), so activity
+sequencing is data a scheduler or pull-planning review can walk. The graph
+the commissioning record needs is the same graph the schedule needs — and
+a dependency cycle among prerequisites is a machine-raisable finding the
+day the schedule is issued, not a discovery during start-up week.
 
 ## Example
 

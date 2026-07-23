@@ -1,6 +1,6 @@
 pragma: Lib <
   doc: "Open commissioning ontology — improvement measures and savings: the EBCx master list of findings as data. Measures carry economics (cost, payback, incentives); savings estimates are per-category records that harden from estimated to adjusted to verified. Candidate for contribution to Project Haystack as ph.cx."
-  version: "0.3.0"
+  version: "0.4.0"
   depends: {
     { lib: "sys" }
     { lib: "hx" }

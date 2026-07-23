@@ -9,7 +9,7 @@ intent to upstream the core as `ph.cx`.
 ```
 cx/                 → root vocabulary (phases, roles, disciplines, planes, modes, CxProject, OcxProgram, document taxonomy, acceptance records, tag vocabulary)
 cx.requirements/    → OPR/CFR/BOD contract layer + traceability spine
-cx.verification/    → verification activities, checklists, tests, training, attestations
+cx.verification/    → verification activities, checklists, tests, training, attestations, activity prerequisites
 cx.issues/          → deficiency + observation interchange shapes
 cx.measures/        → improvement measures + savings (EBCx findings economics)
 cx.sequences/       → control sequences of operation as commissioning artifacts
