@@ -1,7 +1,7 @@
 // Lifecycle status of a commissioning issue:
 // open -> inProgress -> workCompleted -> inReview -> closed
-// (+ cancelled / deferred edge states). Who owes the next action is
-// carried separately by ballInCourt, not by splitting states.
+// (+ cancelled / deferred / stalled edge states). Who owes the next
+// action is carried separately by ballInCourt, not by splitting states.
 CxIssueStatus: Choice
 
 // Raised, not yet addressed
@@ -24,6 +24,23 @@ CxIssueCancelled: CxIssueStatus { issueCancelled }
 
 // Parked for a later phase or season
 CxIssueDeferred: CxIssueStatus { issueDeferred }
+
+// Stopped progressing without a decision to stop it. Distinct from
+// issueDeferred, which someone chose: a deferred issue is parked on
+// purpose and is fine, a stalled one is neglected and needs chasing.
+// Distinct from issueInProgress because "being worked" and "assigned
+// to someone who has not touched it in seven weeks" are different
+// situations to act on, and an operational issue list exists largely
+// to separate them.
+//
+// Set deliberately, like every other member — this is a position
+// someone (or a policy the owner configured) moves the issue INTO,
+// not a rendering of elapsed time. Tools that prefer to derive
+// stuck-ness from timestamps remain free to do so and simply never
+// write this marker; the two approaches do not conflict, and the
+// choice stays with the implementation rather than being forced by
+// the absence of a vocabulary term.
+CxIssueStalled: CxIssueStatus { issueStalled }
 
 // Urgency of an issue or observation
 CxIssuePriority: Choice
