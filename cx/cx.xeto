@@ -218,12 +218,15 @@ ManualMode: VerificationMode { manualMode }
 // Prefer automatic, fall back to manual when data unavailable
 HybridMode: VerificationMode { hybridMode }
 
-// Top-level commissioning project — one per Cx engagement
+// Top-level commissioning project — one per Cx engagement. siteRef IS the
+// building: ph::Site typically maps to one building with its own street
+// address, and building-specific design data belongs on a Site subtype,
+// not on a second ref here. A multi-building engagement is one project
+// per building.
 CxProject: Dict {
   cxProject
   dis: Str
   siteRef: Ref                 // of: ph::Site
-  buildingRef: Ref?
   phase: CxPhase
   projectType: CxProjectType?
   contractScope: Str?
