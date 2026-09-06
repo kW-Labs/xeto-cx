@@ -1,6 +1,6 @@
 pragma: Lib <
   doc: "Open commissioning ontology — improvement measures and savings: the EBCx master list of findings as data. Measures carry economics (cost, payback, incentives); savings estimates are per-category records that harden from estimated to adjusted to verified. Candidate for contribution to Project Haystack as ph.cx."
-  version: "0.5.0"
+  version: "0.5.1"
   depends: {
     { lib: "sys" }
     { lib: "hx" }
@@ -10,5 +10,4 @@ pragma: Lib <
     dis: "Open Cx Ontology (stewarded by kW Engineering)"
     uri: "https://github.com/kW-Labs/xeto-cx"
   }
-  hxSysOnly
 >
