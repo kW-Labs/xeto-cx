@@ -86,6 +86,10 @@ CxSourceObservation: CxIssueSource { sourceObservation }
 // Raised by analytics / fault detection
 CxSourceAnalytics: CxIssueSource { sourceAnalytics }
 
+// Raised from a ranked feed of analytics outcomes: a rule set observed on a
+// subject over an episode, reproducible from the rule engine's spark cache
+CxSourceFeed: CxIssueSource { sourceFeed }
+
 // Commissioning deficiency or punch-list item. requirementRef closes the
 // traceability loop: a deficiency can state which OPR requirement it
 // violates. Field set covers the issues-and-resolution-log requirements
