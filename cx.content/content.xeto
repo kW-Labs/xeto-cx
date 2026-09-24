@@ -557,6 +557,17 @@
   reviewCadence: Cadence "quarterly"
 }
 
+// A concluded ongoing-Cx engagement — a two-year pilot that ran its course
+// and was closed rather than deleted, so the [startedAt, endedAt) enrolment
+// window over which its savings were measured survives the close.
+@ex-ocx-concluded: OcxProgram {
+  dis: "Retired Pilot Ongoing Cx (2022–2024)"
+  siteRef: @ex-site
+  startedAt: Date "2022-01-01"
+  endedAt: Date "2024-01-01"
+  reviewCadence: Cadence "quarterly"
+}
+
 // Facility change event — the OCx loop of Guideline 0 Figure B-1: a use
 // change is evaluated against the CFR, dispositioned, and follow-on
 // updates tracked to closure
