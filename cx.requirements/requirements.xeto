@@ -262,6 +262,61 @@ PerformanceCriterion: Dict {
   verificationMode: VerificationMode?
 }
 
+// Performance-plane criterion comparing an executable sequence logic's
+// output with the running system's trend, the logic fed the same trended
+// inputs. Where PerformanceCriterion compares a point with a static band,
+// this compares it with a time-varying reference the logic computes, so
+// the reference's identity is part of the criterion (logicRef).
+//
+// A record naming logicOutput grades that output. A record with no
+// logicOutput holds defaults only and is never graded. Per requirement and
+// logic lineage there is at most one defaults record and at most one
+// record per logicOutput; more is an invalid set and every output is
+// inconclusive. A per-output record's set slots override the defaults
+// record's, slot by slot; an unset slot falls back to the defaults record,
+// then to the built-in default: 0 for every tolerance (funnel's own
+// default), adherenceTarget 100, minCoverage 90, maxGap 600 s,
+// referenceStep 1 s. The last three are judgement values, not measured.
+//
+// Normative. The outcome is computed step by step by the replay contract
+// in the family's 0.7.0 rationale (docs/2026-10-sequence-logic-and-replay-0.7.0.md),
+// which adopts the LBNL funnel comparison: a tube of half-width timeTolAbs
+// in time and half-height max(valueTolAbs, valueTolRange x reference
+// range, valueTolLocal x local reference magnitude) in value, built around
+// the reference and tested at the trend's samples. The result is
+// inconclusive, never pass or fail, whenever the contract cannot grade:
+// among other cases, when a placeholder parameter of the logic is
+// unresolved, the reference cannot be computed, an input or the output
+// has no data in the window, or coverage is below minCoverage.
+// Where the indicator is off, reference and trend are both zeroed and the
+// time is suspended rather than graded.
+//
+// Immutable once a VerificationResult references it: a change writes a new
+// record with supersedesRef. logicRef may name any revision of the logic's
+// lineage; a replay test pins the exact revision it ran against.
+ReplayCriterion: Dict {
+  replayCriterion
+  requirementRef: Ref          // of: Requirement
+  logicRef: Ref                // of: cx.sequences::SequenceLogic; any revision of its lineage
+  logicOutput: Str?            // the output as the logic names it; absent = defaults record
+  pointSpec: Str?              // point spec qname of the trended output
+  pointRefs: List?             // of: Ref; explicit trended output points
+  unit: Str?                   // unit the trend and reference are compared in
+  timeTolAbs: Number?          // seconds; funnel atolx
+  valueTolAbs: Number?         // in unit; funnel atoly
+  valueTolLocal: Number?       // fraction of the local reference magnitude; funnel ltoly
+  valueTolRange: Number?       // fraction of the reference range; funnel rtoly; use with caution
+  adherenceTarget: Number?     // percent of evaluated time inside the funnel; default 100
+  minCoverage: Number?         // percent of unsuspended time with data; default 90
+  maxGap: Number?              // seconds a sample may stand before its time counts as missing; default 600
+  referenceStep: Number?       // seconds between reference grid points; default 1
+  indicatorInput: Str?         // a Boolean input of the logic; compare only while true
+  indicatorPointRef: Ref?      // or a trended Boolean point; compare only while true
+  indicatorInverted: Marker?   // compare only while the indicator is false
+  verificationMode: VerificationMode?
+  supersedesRef: Ref?          // of: ReplayCriterion
+}
+
 // Attestation-plane criterion: a deliverable or action a human must
 // complete and sign for.
 ProcessRequirement: Dict {
