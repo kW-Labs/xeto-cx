@@ -566,6 +566,10 @@ CxEntity: Dict <abstract> {
   // Performance-plane criterion (telemetry evaluation)
   *performanceCriterion: Marker
 
+  // Performance-plane criterion comparing a sequence logic's output with
+  // the running system's trend
+  *replayCriterion: Marker
+
   // Attestation-plane criterion (human deliverable)
   *processRequirement: Marker
 
@@ -601,6 +605,9 @@ CxEntity: Dict <abstract> {
 
   // Testing, adjusting, and balancing activity
   *tabTest: Marker
+
+  // Replay of an executable sequence logic against one unit's trends
+  *sequenceReplayTest: Marker
 
   // One typed prerequisite of a verification activity
   *activityPrerequisite: Marker
@@ -664,4 +671,10 @@ CxEntity: Dict <abstract> {
 
   // Resolved value of a sequence parameter for an instance
   *sequenceParamValue: Marker
+
+  // Executable sequence logic applied to equipment, by neutral reference
+  *sequenceLogic: Marker
+
+  // Evidence for one parameter of a sequence logic revision
+  *sequenceLogicParam: Marker
 }
