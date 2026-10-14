@@ -222,10 +222,13 @@ covering the season the sequence acts in, and the logic revision in
 force: prerequisite, scheduling and identity facts an activity already
 holds.
 
-**Ongoing Cx.** `VerificationActivity.cxProjectRef` is required, so an
-ongoing-Cx replay is filed under the `CxProject` whose requirements it
-verifies. A facility with no `CxProject` at all cannot record a replay
-until that anchor is relaxed, which is a separate change.
+**Ongoing Cx.** A replay anchors like any `VerificationActivity`, on
+exactly one of `cxProjectRef` or `ocxProgramRef`. A replay of a
+commissioning project is filed under its `CxProject`. A replay the
+ongoing-Cx program re-runs (202 section 3) anchors on the `OcxProgram`
+instead, which also covers a facility with no `CxProject` at all.
+`ocxProgramRef` landed after 0.7.0 and rides the next family release. In
+0.7.0 itself, `cxProjectRef` is still required.
 
 **Status rollup.** `activityPassed` when every graded result passed,
 `activityFailed` when any failed, otherwise `activityDeferred`: the proof
@@ -410,9 +413,9 @@ feeds which logic input), which stays out of this family for now.
 - **The replay is a verification activity like any other**: actual
   responses per check (Guideline 0 7.2.10.1g), retest lineage and witness
   signoff (202 Appendix J5.1c), deferred or seasonal (202 16.2.2), ongoing
-  Cx (202 section 3) subject to the `cxProjectRef` limit above. A failure
-  raises a `CxIssue`; an accepted divergence is a `RequirementVariance`
-  (202 Appendix O).
+  Cx (202 section 3) anchored on the project or the program, as above. A
+  failure raises a `CxIssue`; an accepted divergence is a
+  `RequirementVariance` (202 Appendix O).
 - **Trending is a commissioning prerequisite, because 231 excludes it**
   (Appendix A1). The replay needs trends of every input and output,
   recorded as an `ActivityPrerequisite`. CDL can declare trend intent per
@@ -536,9 +539,10 @@ of evidence, not a proof.
   `sourceDocRef` and `sourcePage` can be added if a consumer needs them.
 - **A per-output parameter gate.** It needs the logic's dependency graph,
   which this family does not hold.
-- **Replays under ongoing Cx without a project.** An either-or program
-  anchor on `VerificationActivity`, as 0.3.0 did for `CxPlan`, is its own
-  change.
+- **A project-to-program link.** An activity carries exactly one anchor,
+  so a retro-Cx project running under a standing program does not anchor
+  its activities on both. The link between that project and its program
+  belongs on the project, and this family does not declare it yet.
 
 ## Sources
 

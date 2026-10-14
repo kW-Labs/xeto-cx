@@ -54,10 +54,21 @@ OutcomeInconclusive: VerificationOutcome { outcomeInconclusive }
 // the traceability edge back to the OPR: an activity states precisely which
 // requirements it verifies. Prerequisites are separate flat
 // ActivityPrerequisite records pointing back via activityRef.
+//
+// Anchoring: exactly one of cxProjectRef or ocxProgramRef is set. An
+// activity of a commissioning project carries cxProjectRef. An activity of
+// an ongoing-Cx program rather than of a project (202 section 3), such as a
+// persistence review after turnover or any check on a facility with no
+// CxProject, carries ocxProgramRef instead.
+// The rule is exclusive, not "at least one": a retro-Cx project under a
+// standing program anchors its activities on cxProjectRef alone, and the
+// project-to-program link belongs on the project (not yet declared).
+// fits() cannot check an either-or, so a consumer checks it on read.
 VerificationActivity: Dict {
   verificationActivity
   dis: Str?
-  cxProjectRef: Ref              // of: cx::CxProject
+  cxProjectRef: Ref?             // of: cx::CxProject; set for a project activity
+  ocxProgramRef: Ref?            // of: cx::OcxProgram; set for an ongoing-Cx activity with no project
   siteRef: Ref?
   equipRef: Ref?
   systemRef: Ref?

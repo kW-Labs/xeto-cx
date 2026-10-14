@@ -732,6 +732,19 @@
   systemsManualUpdated
 }
 
+// A verification activity of the ongoing-Cx program, anchored on the
+// program rather than a project: the quarterly persistence review after
+// turnover
+@ex-ocx-review-q3: FieldObservation {
+  dis: "Q3 persistence review"
+  ocxProgramRef: @ex-ocx
+  siteRef: @ex-site
+  persistencePhase
+  activityPassed
+  requirementRefs: { @ex-req-space-temp-cfr }
+  objective: "Confirm the conference-center zones hold the amended CFR space temperature criteria after the tenant fit-out"
+}
+
 // ── Verification results — one per outcome ───────────────────────────────
 
 // Conformance check: heat-recovery marker present on every scoped AHU
