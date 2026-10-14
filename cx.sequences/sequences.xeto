@@ -1,6 +1,11 @@
 // Functional role of a sequence section — the section anatomy shared by
 // published guidelines (e.g. ASHRAE Guideline 36's per-equipment
-// subsection convention) and institutional control standards.
+// subsection convention) and institutional control standards. The roles
+// describe the guideline document's anatomy. Alarm and fault-detection
+// sections are outside the control description language's scope
+// (ANSI/ASHRAE 231 Appendix A1) unless they are part of the control logic,
+// so a SequenceLogic normally does not list them, and requirements on them
+// are verified by functional test steps or performance criteria.
 SequenceSectionRole: Choice
 
 // Mode/state control logic
@@ -25,25 +30,11 @@ ParamBindingSection: SequenceSectionRole { paramBindingSection }
 // Required points list
 PointsListSection: SequenceSectionRole { pointsListSection }
 
-// Kind of sequence parameter
-SequenceParamKind: Choice
-
-// Operating setpoint or setpoint limit
-SetpointParam: SequenceParamKind { setpointParam }
-
-// Loop/reset tuning value, e.g. trim-and-respond steps
-TuningParam: SequenceParamKind { tuningParam }
-
-// Design selection that gates which sections apply, e.g. ventilation
-// standard or economizer high-limit option
-SelectionParam: SequenceParamKind { selectionParam }
-
-// Operating schedule value
-ScheduleParam: SequenceParamKind { scheduleParam }
-
 // A sequence-of-operation source: one edition of a published guideline
-// (e.g. "ASHRAE G36-2024") or one institutional standard control detail.
-// Identity and citation only — published prose is never embedded here.
+// (e.g. "ASHRAE G36-2024"), an institutional standard control detail, or a
+// project's own contract-document sequence (e.g. a controls drawing sheet,
+// docId the sheet number). Identity and citation only — published prose
+// is never embedded here.
 SequenceSource: Dict {
   sequenceSource
   dis: Str
@@ -58,7 +49,8 @@ SequenceSource: Dict {
 // institutional sheet's named subsection. Guideline 36 holds section
 // numbers stable to the third level across addenda — stableAnchor marks
 // ids safe to cite long-term. Narrative stays with the source document;
-// this record is the join point for statements, tests, and runtime rules.
+// this record is the join point for statements, logic, tests, and runtime
+// rules.
 SequenceSection: Dict {
   sequenceSection
   sourceRef: Ref               // of: SequenceSource
@@ -70,65 +62,148 @@ SequenceSection: Dict {
   sortOrder: Number?
 }
 
-// One atomic sequence-of-operation statement: the smallest behavior a
-// submitted sequence, a functional test, or trend data can pass or fail
-// on its own. narrative is verbatim only when the project or institution
-// owns the text; for published guidelines the section/clause citation is
-// the identity and the prose stays in the source. trigger/response are
-// filled only for clean condition-to-action statements.
+// One citable statement of a sequence: the anchor a requirement, a design
+// review or a functional test step points at. The logic itself is not
+// modeled here; executable logic is referenced by SequenceLogic, and the
+// statement joins to it on sectionRef. narrative is verbatim only when the
+// project or institution owns the text; for published guidelines the
+// section and clause citation is the identity and the prose stays in the
+// source.
 SequenceStatement: Dict {
   sequenceStatement
   sectionRef: Ref              // of: SequenceSection
   clausePath: Str?             // sub-section clause, e.g. "a.2" — may shift across revisions
   narrative: Str?              // verbatim statement, when the text is owned
-  trigger: Str?                // initiating condition
-  response: Str?               // commanded outcome
   requirementRef: Ref?         // of: cx.requirements::Requirement — the traceability spine
   sortOrder: Number?
 }
 
-// One parameter of a sequence source — the fill-in contract a project
-// must complete. Guideline 36 section 3 partitions parameters by
-// provider: designer-scheduled values, TAB field measurements (each with
-// a measurement procedure), and controls-contractor computed values.
-// A placeholder parameter is itself a requirement: the project must
-// supply the value before the sequence is complete.
-SequenceParam: Dict {
-  sequenceParam
-  sourceRef: Ref               // of: SequenceSource
-  symbol: Str                  // as published, e.g. "Vcool-max", "Max_DSP"
-  dis: Str?
-  definedIn: Str?              // sectionId where the source defines it, e.g. "3.1.2.1"
-  providedBy: CxRole?          // who supplies the value: designerRole, tabRole, controlsRole, vendorRole
-  paramKind: SequenceParamKind?
-  unit: Str?
-  defaultVal: Obj?             // source-published default, when one exists
-  placeholder: Marker?         // source prints a fill-in, not a value
-  procedure: Str?              // measurement procedure for field-determined values
-}
+// Authority behind a parameter value. A value with no document behind it
+// is still recorded, and says so. The basis names whose authority a value
+// carries, not how it was captured.
+ParamValueBasis: Choice
 
-// Application of a sequence source to one piece of equipment or system on
-// a project. Selected options and resolved parameter values hang off this
-// record; unresolved placeholder params are auditable gaps in the
-// project's fill-in contract.
-SequenceInstance: Dict {
-  sequenceInstance
+// Stated in the contract documents or the design file
+ValueFromDesign: ParamValueBasis { designValue }
+
+// Dictated by an owner requirement; requirementRef names it
+ValueFromOpr: ParamValueBasis { oprValue }
+
+// Measured in the field per the guideline's procedure, e.g. by TAB
+ValueFieldMeasured: ParamValueBasis { fieldMeasuredValue }
+
+// The guideline's or block library's published default; nobody set it for
+// this project. A placeholder whose value has this basis is unresolved.
+ValueSourceDefault: ParamValueBasis { sourceDefaultValue }
+
+// Chosen by the implementer with no document behind it, including field
+// tuning
+ValueImplementerSet: ParamValueBasis { implementerSetValue }
+
+// Format of an executable sequence logic
+SequenceLogicFormat: Choice
+
+// Control description language source, e.g. a class conforming to
+// ANSI/ASHRAE 231
+CdlLogic: SequenceLogicFormat { cdlLogic }
+
+// The control description language's JSON-LD exchange form
+CxfLogic: SequenceLogicFormat { cxfLogic }
+
+// Functional mock-up unit
+FmuLogic: SequenceLogicFormat { fmuLogic }
+
+// Any other executable format; logicStandard names it
+OtherLogic: SequenceLogicFormat { otherLogic }
+
+// An executable sequence applied to equipment: the neutral reference to
+// logic that lives in its own format and store, e.g. a control description
+// language class. The logic is never restated here. This record is the
+// identity a replay test computes expected outputs from, and the key its
+// parameter evidence hangs off.
+//
+// One record per revision: a changed logic writes a new record with
+// supersedesRef, so every result names the exact logic it was checked
+// against. One logic applied to several units is one record listing them
+// in equipRefs; per-unit values live on SequenceLogicParam.equipRef.
+//
+// logicHash (required) is "<algorithm>:<lowercase hex>", sha256 unless
+// stated, over the logic as authored: one file's bytes, or the digest of a
+// manifest of lines "<path relative to the package root> <sha256 hex>",
+// sorted bytewise by path, UTF-8, LF-joined. For a control description
+// language logic that is the design's source, excluding the block library,
+// which libraryName and libraryVersion name instead. An exchange export an
+// engine read is named by translator and translatorVersion. logicUri, when
+// set, is absolute; a project-relative path is not a logicUri. Canonical
+// forms are restated in the family's 0.7.0 rationale.
+//
+// logicStandard describes a format and is not a compliance claim. A logic
+// with no Attestation on it is unreviewed. authorRole stays absent when a
+// tool proposed the logic, since no CxRole is a tool; authoredBy names the
+// proposer in text.
+SequenceLogic: Dict {
+  sequenceLogic
   dis: Str?
-  sourceRef: Ref               // of: SequenceSource
   cxProjectRef: Ref?           // of: cx::CxProject
-  equipRef: Ref?
+  siteRef: Ref?
+  equipRefs: List?             // of: Ref; equipment the logic is applied to
   systemRef: Ref?
-  sectionRefs: List?           // of: Ref of SequenceSection — sections applied, when a subset
+  sourceRef: Ref?              // of: SequenceSource; the guideline it implements, when it implements one
+  sectionRefs: List?           // of: Ref of SequenceSection; sections the logic covers
+  logicFormat: SequenceLogicFormat
+  logicStandard: Str?          // the format's standard, e.g. "ANSI/ASHRAE 231-2026"
+  logicClass: Str?             // top-level class or program name, as the format names it
+  logicHash: Str               // "<algorithm>:<hex>" over the logic as authored
+  logicUri: Uri?               // absolute; never a project-relative path
+  revision: Str?
+  libraryName: Str?            // block library the logic instantiates
+  libraryVersion: Str?
+  translator: Str?             // exchange-format export used, when one was
+  translatorVersion: Str?
+  implRef: Ref?                // the tool's own record of the logic, in the same store
+  sourceDocRef: Ref?           // provenance: the design document or drawing
+  sourcePage: Number?          // provenance: page within sourceDocRef
+  authorRole: CxRole?          // absent when a tool proposed it
+  authoredBy: Str?
   notes: Str?
+  supersedesRef: Ref?          // of: SequenceLogic
 }
 
-// Resolved value of one parameter for one instance — the completed cell
-// of the fill-in contract, with who resolved it and when.
-SequenceParamValue: Dict {
-  sequenceParamValue
-  instanceRef: Ref             // of: SequenceInstance
-  paramRef: Ref                // of: SequenceParam
+// Evidence for one parameter of one logic revision: who supplies it,
+// whether the guideline or design prints a fill-in, its value, the
+// authority behind the value, and where that value is written down. Keyed
+// by (logicRef, logicParam, equipRef): logicParam is the parameter as the
+// logic spells it, and equipRef is set only when the value differs per unit
+// of a multi-unit logic.
+//
+// A placeholder with no value is an auditable gap. A placeholder is
+// resolved when val is set and valueBasis is not sourceDefaultValue. An
+// unresolved placeholder blocks a replay of the logic: every graded output
+// is inconclusive until it is resolved (the replay contract's parameter
+// gate). Confirmation of a value by a party other than its supplier is an
+// Attestation on this record.
+//
+// Parameter records are per logic revision: a new revision gets its own
+// records, and a tool copies unchanged ones forward. Glue parameters that
+// only the logic has, and that the commissioning record has no reason to
+// track, need no record.
+SequenceLogicParam: Dict {
+  sequenceLogicParam
+  logicRef: Ref                // of: SequenceLogic
+  logicParam: Str              // the parameter as the logic names it
+  equipRef: Ref?               // when the value differs per unit; absent = every unit of the logic
+  dis: Str?
+  sourceSymbol: Str?           // the guideline's own symbol, e.g. "Max_ClgSAT"
+  definedIn: Str?              // where the guideline defines it, e.g. "3.1.4.1"
+  providedBy: CxRole?          // who supplies the value: designerRole, tabRole, controlsRole
+  placeholder: Marker?         // the guideline or design prints a fill-in
+  procedure: Str?              // measurement procedure, for a field-determined value
   val: Obj?
-  resolvedBy: CxRole?
+  unit: Str?
+  valueBasis: ParamValueBasis?
+  sourceDocRef: Ref?           // provenance: the document the value is written in
+  sourcePage: Number?          // provenance: page within sourceDocRef
+  sourceLocator: Str?          // a clause and row, or a design instance path
+  requirementRef: Ref?         // of: cx.requirements::Requirement; when the OPR dictated the value
   resolvedAt: DateTime?
 }

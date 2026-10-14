@@ -68,7 +68,7 @@ VerificationActivity: Dict {
   disciplines: CxDiscipline? <multiChoice>
   requirementRefs: List?         // of: Ref
   attemptNo: Number?             // 1 for first run; increments on retest (202 App J5.1c)
-  retestOf: Ref?                 // of: VerificationActivity — the failed run this retests
+  retestOf: Ref?                 // of: VerificationActivity — the failed or deferred run this retests
   testConditions: Str?           // ambient conditions, setpoints, overrides in effect (G0 7.2.10.1e)
   deferred: Marker?              // deferred to a later date or season (202 section 16.2.2)
   seasonal: Marker?              // requires a specific season, e.g. peak cooling
@@ -153,6 +153,49 @@ StartUp: VerificationActivity {
 // Testing, adjusting, and balancing verification
 TabTest: VerificationActivity {
   tabTest
+}
+
+// Where the parameter values fed to a replay's reference came from
+ReplayParamSource: Choice
+
+// The evidenced values of the logic's SequenceLogicParam records: the
+// acceptance replay, proving the building against the design
+ReplayDesignParams: ReplayParamSource { designParamSource }
+
+// The values read from the controller under test: a diagnostic replay. A
+// difference between these and the evidenced values is a separate
+// conformance-plane finding, not a replay outcome.
+ReplayControllerParams: ReplayParamSource { controllerParamSource }
+
+// One replay of an executable sequence logic on one unit's trended inputs,
+// comparing the logic's outputs with the unit's trended outputs. equipRef
+// names the unit, which is one of the logic's equipRefs. logicRef pins the
+// exact logic revision: the criterion's logicRef or a revision that
+// supersedes it, walking supersedesRef. Neither invariant can be checked
+// by fits(), so a consumer checks both on read.
+//
+// paramSetHash digests the parameter set fed to the reference, so a
+// result names exactly what it was checked against. compiledFromLogic
+// flags a controller generated from this same logic: a pass then tests
+// the translator and runtime, not an independent implementation.
+//
+// Results point back via activityRef, one VerificationResult per graded
+// output, on the performance plane. Status rollup: activityPassed when
+// every result passed, activityFailed when any failed, otherwise
+// activityDeferred (the proof waits for data; the re-run is a new activity
+// with retestOf). Re-runnable from the logic and the evidence package the
+// results reference; re-extracting the series from the building needs the
+// tool's input binding, which this record does not carry. Trends of every
+// input and output are a prerequisite, recorded as an ActivityPrerequisite.
+// The outcome is defined by the replay contract in the family's 0.7.0
+// rationale (docs/2026-10-sequence-logic-and-replay-0.7.0.md).
+SequenceReplayTest: VerificationActivity {
+  sequenceReplayTest
+  logicRef: Ref                // of: cx.sequences::SequenceLogic; the exact revision replayed
+  referenceEngine: Str?        // the engine that computed the reference, with its version
+  paramSource: ReplayParamSource?
+  paramSetHash: Str?           // "sha256:<hex>" of the parameter set fed; canonical form in the rationale
+  compiledFromLogic: Marker?   // the controller under test was generated from this logic
 }
 
 // Kind of condition an activity prerequisite expresses
@@ -305,7 +348,7 @@ Attestation: Dict {
 VerificationResult: Dict {
   verificationResult
   requirementRef: Ref          // of: cx.requirements::Requirement
-  criterionRef: Ref?           // of: SpecConstraint | PerformanceCriterion | ProcessRequirement
+  criterionRef: Ref?           // of: SpecConstraint | PerformanceCriterion | ReplayCriterion | ProcessRequirement
   subjectRef: Ref?             // record checked: equip, system, space, or site
   activityRef: Ref?            // of: VerificationActivity — when produced by a field activity
   outcome: VerificationOutcome
@@ -313,8 +356,11 @@ VerificationResult: Dict {
   mode: VerificationMode?      // autoMode for machine checks, manualMode for human-entered
   ranAt: DateTime
   evalSpan: Str?               // performance plane: span evaluated, e.g. "2026-06-01..2026-06-30 occupied"
+  evalStart: DateTime?         // performance plane: start of the evaluated window
+  evalEnd: DateTime?           // performance plane: end of the evaluated window; evalSpan stays the human label
   actualVal: Obj?              // observed value at check time
   adherencePct: Number?        // performance plane: percent of span within criteria
+  coveragePct: Number?         // performance plane: percent of the unsuspended window with usable data; adherencePct is over that share
   evidenceRef: Ref?            // supporting artifact: trend export, photo, report
   witnessRef: Ref?             // of: Attestation — witness signoff (202 App J5.1c)
   notes: Str?
