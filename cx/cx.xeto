@@ -660,17 +660,8 @@ CxEntity: Dict <abstract> {
   // Citable section of a sequence source
   *sequenceSection: Marker
 
-  // Atomic sequence-of-operation statement
+  // Citable sequence-of-operation statement, the anchor a requirement points at
   *sequenceStatement: Marker
-
-  // Sequence parameter — the fill-in contract
-  *sequenceParam: Marker
-
-  // Project application of a sequence to equipment
-  *sequenceInstance: Marker
-
-  // Resolved value of a sequence parameter for an instance
-  *sequenceParamValue: Marker
 
   // Executable sequence logic applied to equipment, by neutral reference
   *sequenceLogic: Marker
