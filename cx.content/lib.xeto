@@ -15,5 +15,4 @@ pragma: Lib <
     dis: "Open Cx Ontology (stewarded by kW Engineering)"
     uri: "https://github.com/kW-Labs/xeto-cx"
   }
-  hxSysOnly
 >
