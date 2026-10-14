@@ -1,6 +1,6 @@
 pragma: Lib <
   doc: "Open commissioning ontology — control sequences of operation as commissioning artifacts: guideline citations (sources, sections, citable statements), references to executable sequence logic, and parameter evidence. Statements anchor requirements and functional test steps to cited clauses; the logic itself lives in its own format and is referenced by identity and hash, never restated; published-guideline prose is referenced by section id, never embedded. Candidate for contribution to Project Haystack as ph.cx."
-  version: "0.6.0"
+  version: "0.7.0"
   depends: {
     { lib: "sys" }
     { lib: "hx" }
