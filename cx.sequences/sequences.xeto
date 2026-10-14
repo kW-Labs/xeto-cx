@@ -1,6 +1,11 @@
 // Functional role of a sequence section — the section anatomy shared by
 // published guidelines (e.g. ASHRAE Guideline 36's per-equipment
-// subsection convention) and institutional control standards.
+// subsection convention) and institutional control standards. The roles
+// describe the guideline document's anatomy. Alarm and fault-detection
+// sections are outside the control description language's scope
+// (ANSI/ASHRAE 231 Appendix A1) unless they are part of the control logic,
+// so a SequenceLogic normally does not list them, and requirements on them
+// are verified by functional test steps or performance criteria.
 SequenceSectionRole: Choice
 
 // Mode/state control logic
@@ -25,25 +30,11 @@ ParamBindingSection: SequenceSectionRole { paramBindingSection }
 // Required points list
 PointsListSection: SequenceSectionRole { pointsListSection }
 
-// Kind of sequence parameter
-SequenceParamKind: Choice
-
-// Operating setpoint or setpoint limit
-SetpointParam: SequenceParamKind { setpointParam }
-
-// Loop/reset tuning value, e.g. trim-and-respond steps
-TuningParam: SequenceParamKind { tuningParam }
-
-// Design selection that gates which sections apply, e.g. ventilation
-// standard or economizer high-limit option
-SelectionParam: SequenceParamKind { selectionParam }
-
-// Operating schedule value
-ScheduleParam: SequenceParamKind { scheduleParam }
-
 // A sequence-of-operation source: one edition of a published guideline
-// (e.g. "ASHRAE G36-2024") or one institutional standard control detail.
-// Identity and citation only — published prose is never embedded here.
+// (e.g. "ASHRAE G36-2024"), an institutional standard control detail, or a
+// project's own contract-document sequence (e.g. a controls drawing sheet,
+// docId the sheet number). Identity and citation only — published prose
+// is never embedded here.
 SequenceSource: Dict {
   sequenceSource
   dis: Str
@@ -58,7 +49,8 @@ SequenceSource: Dict {
 // institutional sheet's named subsection. Guideline 36 holds section
 // numbers stable to the third level across addenda — stableAnchor marks
 // ids safe to cite long-term. Narrative stays with the source document;
-// this record is the join point for statements, tests, and runtime rules.
+// this record is the join point for statements, logic, tests, and runtime
+// rules.
 SequenceSection: Dict {
   sequenceSection
   sourceRef: Ref               // of: SequenceSource
@@ -70,67 +62,20 @@ SequenceSection: Dict {
   sortOrder: Number?
 }
 
-// One atomic sequence-of-operation statement: the smallest behavior a
-// submitted sequence, a functional test, or trend data can pass or fail
-// on its own. narrative is verbatim only when the project or institution
-// owns the text; for published guidelines the section/clause citation is
-// the identity and the prose stays in the source. trigger/response are
-// filled only for clean condition-to-action statements.
+// One citable statement of a sequence: the anchor a requirement, a design
+// review or a functional test step points at. The logic itself is not
+// modeled here; executable logic is referenced by SequenceLogic, and the
+// statement joins to it on sectionRef. narrative is verbatim only when the
+// project or institution owns the text; for published guidelines the
+// section and clause citation is the identity and the prose stays in the
+// source.
 SequenceStatement: Dict {
   sequenceStatement
   sectionRef: Ref              // of: SequenceSection
   clausePath: Str?             // sub-section clause, e.g. "a.2" — may shift across revisions
   narrative: Str?              // verbatim statement, when the text is owned
-  trigger: Str?                // initiating condition
-  response: Str?               // commanded outcome
   requirementRef: Ref?         // of: cx.requirements::Requirement — the traceability spine
   sortOrder: Number?
-}
-
-// One parameter of a sequence source — the fill-in contract a project
-// must complete. Guideline 36 section 3 partitions parameters by
-// provider: designer-scheduled values, TAB field measurements (each with
-// a measurement procedure), and controls-contractor computed values.
-// A placeholder parameter is itself a requirement: the project must
-// supply the value before the sequence is complete.
-SequenceParam: Dict {
-  sequenceParam
-  sourceRef: Ref               // of: SequenceSource
-  symbol: Str                  // as published, e.g. "Vcool-max", "Max_DSP"
-  dis: Str?
-  definedIn: Str?              // sectionId where the source defines it, e.g. "3.1.2.1"
-  providedBy: CxRole?          // who supplies the value: designerRole, tabRole, controlsRole, vendorRole
-  paramKind: SequenceParamKind?
-  unit: Str?
-  defaultVal: Obj?             // source-published default, when one exists
-  placeholder: Marker?         // source prints a fill-in, not a value
-  procedure: Str?              // measurement procedure for field-determined values
-}
-
-// Application of a sequence source to one piece of equipment or system on
-// a project. Selected options and resolved parameter values hang off this
-// record; unresolved placeholder params are auditable gaps in the
-// project's fill-in contract.
-SequenceInstance: Dict {
-  sequenceInstance
-  dis: Str?
-  sourceRef: Ref               // of: SequenceSource
-  cxProjectRef: Ref?           // of: cx::CxProject
-  equipRef: Ref?
-  systemRef: Ref?
-  sectionRefs: List?           // of: Ref of SequenceSection — sections applied, when a subset
-  notes: Str?
-}
-
-// Resolved value of one parameter for one instance — the completed cell
-// of the fill-in contract, with who resolved it and when.
-SequenceParamValue: Dict {
-  sequenceParamValue
-  instanceRef: Ref             // of: SequenceInstance
-  paramRef: Ref                // of: SequenceParam
-  val: Obj?
-  resolvedBy: CxRole?
-  resolvedAt: DateTime?
 }
 
 // Authority behind a parameter value. A value with no document behind it
