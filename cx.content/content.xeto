@@ -390,10 +390,19 @@
 }
 
 //
-// Example sequence application — a published guideline sequence applied to
-// the project AHU. The source is cited by section id (published prose is
-// never embedded); the parameter records are the fill-in contract; the
-// statement compiles into a requirement and an FPT step.
+// Example sequence application: a published guideline sequence, cited by
+// section id (published prose is never embedded), implemented on the
+// project AHU by an executable logic the engineer designed. The statement
+// anchors the requirement to the cited clause. The logic is referenced by
+// identity and hash, never restated here. Its parameter records carry the
+// evidence for each fill-in value, and a replay of the logic against the
+// unit's trends proves the requirement on the performance plane.
+//
+// The gate, shown: a June replay ran before TAB measured the maximum duct
+// static pressure. The logic consumes that value, so the June result is
+// inconclusive: an owed value blocks the proof instead of being defaulted.
+// The July retest, after the TAB report, passed. The parameter records show
+// today's resolved state; the June result's notes say what was owed.
 //
 
 @ex-seq-g36: SequenceSource {
@@ -417,6 +426,22 @@
   sortOrder: 1
 }
 
+// Supply fan control, which carries the duct static pressure setpoint reset.
+// Section id as the Modelica Buildings Library 12.1.0 documentation of the
+// multiple-zone VAV controller cites it, at the third level. That
+// documentation cites the May 2020 edition of the guideline, not 2024; the
+// id is illustrative until confirmed against the 2024 text.
+@ex-seq-dsp: SequenceSection {
+  sourceRef: @ex-seq-g36
+  sectionId: "5.16.1"
+  title: "Supply fan control and duct static pressure setpoint reset"
+  modeLogicSection
+}
+
+// Proven by replay of the logic on the performance plane. The FPT step
+// below keeps citing it as supplementary field evidence: it exercises
+// branches under forced conditions that trends may never reach. A failed
+// step raises a CxIssue; it does not write this requirement's result.
 @ex-req-sat-reset: Requirement {
   dis: "AHU supply air temperature reset"
   docRef: @ex-opr
@@ -425,54 +450,188 @@
   oprEnergy
   narrative: "Air handling unit supply air temperature setpoint shall reset per the trim-and-respond logic of the cited guideline section, within the design minimum and maximum setpoint limits."
   citation: "ASHRAE G36-2024 section 5.16.2.2"
-  attestationPlane
+  performancePlane
   reqRequired
   targetSpec: "ph::Ahu"
 }
 
-// Designer-scheduled setpoint limit — placeholder until the design supplies it
-@ex-seq-param-maxsat: SequenceParam {
+@ex-ahu-1: Dict {
+  dis: "AHU-1"
+}
+
+@ex-controls-drawings: Dict {
+  dis: "Mechanical controls drawings"
+}
+
+@ex-tab-report: Dict {
+  dis: "TAB report"
+}
+
+// The engineer's executable design for AHU-1: one control description
+// language class extending the block library's multiple-zone VAV
+// controller, covering both cited sections. One record per revision.
+// The parameter, input and output names below (TSupCoo_max, pMaxSet,
+// u1SupFan, TAirSupSet) are that controller's in Modelica Buildings
+// Library 12.1.0. logicHash and logicUri are illustrative.
+@ex-seq-logic: SequenceLogic {
+  dis: "AHU-1 multiple-zone VAV controller, design rev 3"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  equipRefs: { @ex-ahu-1 }
   sourceRef: @ex-seq-g36
-  symbol: "Max_ClgSAT"
+  sectionRefs: { @ex-seq-sat, @ex-seq-dsp }
+  cdlLogic
+  logicStandard: "ANSI/ASHRAE 231-2026"
+  logicClass: "Example.Ahu1Controller"
+  logicHash: "sha256:595cd330717f89364edeccaa8940064643291570e9af746304c71bdfd77cf8d7"
+  logicUri: Uri "https://example.org/designs/ahu1-controller/"
+  revision: "3"
+  libraryName: "Modelica Buildings Library"
+  libraryVersion: "12.1.0"
+  designerRole
+  authoredBy: "Example design engineer"
+}
+
+// The engineer of record reviewed the logic; without this the logic is
+// unreviewed
+@ex-seq-logic-sig: Attestation {
+  subjectRef: @ex-seq-logic
+  eorRole
+  userName: "Example Engineer of Record"
+  signedAt: DateTime "2026-04-02T10:00:00-06:00 Denver"
+}
+
+// Designer-scheduled setpoint limit: a guideline fill-in, resolved from the
+// controls drawings
+@ex-seq-lp-maxsat: SequenceLogicParam {
+  logicRef: @ex-seq-logic
+  logicParam: "TSupCoo_max"
   dis: "Maximum cooling supply air temperature setpoint"
+  sourceSymbol: "Max_ClgSAT"
   definedIn: "3.1.4.1"
   designerRole
-  setpointParam
-  unit: "°F"
   placeholder
-}
-
-// TAB-measured pressure ceiling — field-determined per the source's procedure
-@ex-seq-param-maxdsp: SequenceParam {
-  sourceRef: @ex-seq-g36
-  symbol: "Max_DSP"
-  dis: "Maximum duct static pressure setpoint"
-  definedIn: "3.2.1.1"
-  tabRole
-  tuningParam
-  unit: "inH₂O"
-  placeholder
-  procedure: "Field-measured at design airflow per the source's TAB procedure"
-}
-
-@ex-seq-inst: SequenceInstance {
-  dis: "AHU-1 supply air temperature reset"
-  sourceRef: @ex-seq-g36
-  cxProjectRef: @ex-project
-  sectionRefs: { @ex-seq-sat }
-  notes: "Applied to the example AHU; Max_DSP unresolved pending TAB"
-}
-
-@ex-seq-pv-maxsat: SequenceParamValue {
-  instanceRef: @ex-seq-inst
-  paramRef: @ex-seq-param-maxsat
   val: Number "65°F"
-  designerRole
+  unit: "°F"
+  designValue
+  sourceDocRef: @ex-controls-drawings
+  sourcePage: 14
+  sourceLocator: "Clause 3.2, setpoint table row 4"
   resolvedAt: DateTime "2026-03-15T09:00:00-06:00 Denver"
 }
 
-// FPT step generated from the sequence statement, closing the loop from
-// sequence atom to witnessed test
+// TAB-measured pressure ceiling: a guideline fill-in, field-determined per
+// the guideline's procedure and resolved from the TAB report on July 10.
+// Until then it was a placeholder with no value, which gated the June replay.
+@ex-seq-lp-maxdsp: SequenceLogicParam {
+  logicRef: @ex-seq-logic
+  logicParam: "pMaxSet"
+  dis: "Maximum duct static pressure setpoint"
+  sourceSymbol: "Max_DSP"
+  definedIn: "3.2.1.1"
+  tabRole
+  placeholder
+  procedure: "Field-measured at design airflow per the guideline's TAB procedure"
+  val: Number "1.2inH₂O"
+  unit: "inH₂O"
+  fieldMeasuredValue
+  sourceDocRef: @ex-tab-report
+  sourceLocator: "AHU-1 duct static pressure test"
+  resolvedAt: DateTime "2026-07-10T14:00:00-06:00 Denver"
+}
+
+// Defaults record: no logicOutput, never graded. Two minutes of time
+// tolerance, compared only while the supply fan is proven on.
+@ex-req-sat-reset-rd: ReplayCriterion {
+  requirementRef: @ex-req-sat-reset
+  logicRef: @ex-seq-logic
+  timeTolAbs: 120
+  indicatorInput: "u1SupFan"
+  autoMode
+}
+
+// Graded output: the supply air temperature setpoint, within half a degree
+@ex-req-sat-reset-r: ReplayCriterion {
+  requirementRef: @ex-req-sat-reset
+  logicRef: @ex-seq-logic
+  logicOutput: "TAirSupSet"
+  unit: "°F"
+  valueTolAbs: 0.5
+}
+
+@ex-seq-replay-jun: SequenceReplayTest {
+  dis: "AHU-1 controller replay, June"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  equipRef: @ex-ahu-1
+  requirementRefs: { @ex-req-sat-reset }
+  logicRef: @ex-seq-logic
+  designParamSource
+  fptPhase
+  activityDeferred
+  attemptNo: 1
+}
+
+@ex-vr-replay-jun: VerificationResult {
+  requirementRef: @ex-req-sat-reset
+  criterionRef: @ex-req-sat-reset-r
+  activityRef: @ex-seq-replay-jun
+  subjectRef: @ex-ahu-1
+  outcomeInconclusive
+  performancePlane
+  autoMode
+  ranAt: DateTime "2026-06-15T08:00:00-06:00 Denver"
+  evalStart: DateTime "2026-06-01T00:00:00-06:00 Denver"
+  evalEnd: DateTime "2026-06-15T00:00:00-06:00 Denver"
+  notes: "Parameter gate: Max_DSP (pMaxSet) was an unresolved TAB placeholder"
+}
+
+// paramSetHash is the canonical digest of the two evidenced values fed to
+// the reference, "TSupCoo_max=65°F" and "pMaxSet=1.2inH₂O", sorted
+// bytewise and LF-joined
+@ex-seq-replay-jul: SequenceReplayTest {
+  dis: "AHU-1 controller replay, July"
+  cxProjectRef: @ex-project
+  siteRef: @ex-site
+  equipRef: @ex-ahu-1
+  requirementRefs: { @ex-req-sat-reset }
+  logicRef: @ex-seq-logic
+  referenceEngine: "Reference simulation of the logic against the named block library version"
+  designParamSource
+  paramSetHash: "sha256:e9ac3b88f808231247e49024c792a9213792a82bbe7645df9d1cf95cfe836541"
+  fptPhase
+  activityPassed
+  attemptNo: 2
+  retestOf: @ex-seq-replay-jun
+}
+
+// Trending is a commissioning prerequisite of a replay: the control
+// description language excludes it from the logic's scope
+@ex-seq-replay-trends: ActivityPrerequisite {
+  activityRef: @ex-seq-replay-jul
+  prereqSystemOperational
+  description: "Interval trends at 60 s or faster for every input of the logic (including outdoor air temperature, supply fan status, operation mode, zone cooling requests and duct static pressure) and for the SAT setpoint output"
+}
+
+@ex-vr-replay-jul: VerificationResult {
+  requirementRef: @ex-req-sat-reset
+  criterionRef: @ex-req-sat-reset-r
+  activityRef: @ex-seq-replay-jul
+  subjectRef: @ex-ahu-1
+  outcomePass
+  performancePlane
+  autoMode
+  ranAt: DateTime "2026-07-29T08:00:00-06:00 Denver"
+  evalStart: DateTime "2026-07-15T00:00:00-06:00 Denver"
+  evalEnd: DateTime "2026-07-29T00:00:00-06:00 Denver"
+  evalSpan: "2026-07-15..2026-07-28, supply fan proven on"
+  adherencePct: 100
+  coveragePct: 98.6
+  notes: "Respond branch exercised on 6 of 14 days; trim held at the maximum otherwise"
+}
+
+// FPT step citing the requirement as supplementary field evidence, closing
+// the loop from cited clause to witnessed test
 @ex-fpt-s04: TestStepDef {
   scriptRef: @ex-ahu-fpt
   stepId: "s04"

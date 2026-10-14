@@ -14,7 +14,7 @@ owner keeps, instead of a PDF trapped in a proprietary tool.
 
 ## Status
 
-**Early draft (0.4.0) — seeking collaborators.** These libraries are being
+**Early draft (0.7.0), seeking collaborators.** These libraries are being
 proven on real commissioning projects. The long-term intent is to contribute
 the core (`cx`, `cx.requirements`) to the
 [Project Haystack](https://project-haystack.org) library family as `ph.cx`,
@@ -35,8 +35,8 @@ not (yet) affiliated with Project Haystack.
 | `cx.verification` | Verification activities: checklists, PVT/FPT test scripts with per-step results, contractor testing, submittal reviews, start-ups, TAB, field observations, training records, attestations, and typed activity prerequisites (the walkable dependency graph) | community-open |
 | `cx.issues` | Deficiency + field-observation interchange shapes, with the Standard 202 issues-log field set | community-open |
 | `cx.measures` | Improvement measures and savings — the EBCx master list of findings as data, with per-category savings that harden from estimated to verified | community-open |
-| `cx.sequences` | Control sequences of operation as commissioning artifacts: citable sources/sections, atomic checkable statements, and the parameter fill-in contract (designer / TAB / controls) | community-open |
-| `cx.content` | Seed reference content as instance data: an example OPR requirement set (incl. a room-matrix criteria set), an AHU installation checklist, an FPT script with step results, a start-up with typed prerequisites, a Guideline 36 sequence application, an EBCx measure with savings, and an EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual) | illustrative only |
+| `cx.sequences` | Control sequences of operation as commissioning artifacts: guideline citations (sources, sections, citable statements), references to executable sequence logic by identity and hash, and parameter evidence (who supplies each value, on what authority, and where it is written down) | community-open |
+| `cx.content` | Seed reference content as instance data: an example OPR requirement set (incl. a room-matrix criteria set), an AHU installation checklist, an FPT script with step results, a start-up with typed prerequisites, a Guideline 36 sequence application with its executable logic and a replay, an EBCx measure with savings, and an EBCx continuation (CFR, OCx program, verification results, variance, Systems Manual) | illustrative only |
 
 ## The three verification planes
 
@@ -46,7 +46,7 @@ about that. Every `Requirement` declares its **verification plane**:
 | Plane | Example requirement | Evaluated by |
 |---|---|---|
 | `conformance` | "All AHUs shall include heat recovery"; "CHW design ΔT ≥ 12°F" | `fits()` against typed records, via criteria that use xeto's own constraint vocabulary (`SpecConstraint`) |
-| `performance` | "Space temps 70–74°F at 95% adherence during occupied hours" | telemetry evaluation over a span (`PerformanceCriterion`) |
+| `performance` | "Space temps 70–74°F at 95% adherence during occupied hours"; "SAT setpoint resets per the cited sequence" | telemetry evaluation over a span: a static band (`PerformanceCriterion`), or a replay of the executable sequence logic against the trends (`ReplayCriterion`, `SequenceReplayTest`) |
 | `attestation` | "Operators trained on the BAS before turnover" | human signoff with evidence (`ProcessRequirement` + `Attestation`) |
 
 ## The whole lifecycle: OPR to CFR to Ongoing Cx
@@ -125,6 +125,9 @@ Manuals), Guideline 36-2024 (sequences of operation), and the BCxA New
 Construction, EBCx, and Ongoing Cx best-practice guides. Published guideline
 content is referenced by citation — section ids and clause paths — never
 embedded. See `docs/2026-07-standards-alignment-0.3.0.md` for the rationale.
+Executable sequence logic (ANSI/ASHRAE 231) is referenced, not restated,
+and proven against the running building by replay; see
+`docs/2026-10-sequence-logic-and-replay-0.7.0.md`.
 
 ## Building
 
