@@ -223,11 +223,12 @@ force: prerequisite, scheduling and identity facts an activity already
 holds.
 
 **Ongoing Cx.** A replay anchors like any `VerificationActivity`, on
-exactly one of `cxProjectRef` or `ocxProgramRef`. An ongoing-Cx replay of
-a commissioning project is filed under its `CxProject`. On a facility with
-no `CxProject`, it anchors on the `OcxProgram` that re-runs it
-(202 section 3). `ocxProgramRef` landed after 0.7.0 and rides the next
-family release. In 0.7.0 itself, `cxProjectRef` is still required.
+exactly one of `cxProjectRef` or `ocxProgramRef`. A replay of a
+commissioning project is filed under its `CxProject`. A replay the
+ongoing-Cx program re-runs (202 section 3) anchors on the `OcxProgram`
+instead, which also covers a facility with no `CxProject` at all.
+`ocxProgramRef` landed after 0.7.0 and rides the next family release. In
+0.7.0 itself, `cxProjectRef` is still required.
 
 **Status rollup.** `activityPassed` when every graded result passed,
 `activityFailed` when any failed, otherwise `activityDeferred`: the proof

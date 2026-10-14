@@ -57,8 +57,9 @@ OutcomeInconclusive: VerificationOutcome { outcomeInconclusive }
 //
 // Anchoring: exactly one of cxProjectRef or ocxProgramRef is set. An
 // activity of a commissioning project carries cxProjectRef. An activity of
-// an ongoing-Cx program on a facility with no CxProject (202 section 3)
-// carries ocxProgramRef instead, as CxPlan may stand alone on its site.
+// an ongoing-Cx program rather than of a project (202 section 3), such as a
+// persistence review after turnover or any check on a facility with no
+// CxProject, carries ocxProgramRef instead.
 // The rule is exclusive, not "at least one": a retro-Cx project under a
 // standing program anchors its activities on cxProjectRef alone, and the
 // project-to-program link belongs on the project (not yet declared).
