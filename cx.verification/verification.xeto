@@ -68,7 +68,7 @@ VerificationActivity: Dict {
   disciplines: CxDiscipline? <multiChoice>
   requirementRefs: List?         // of: Ref
   attemptNo: Number?             // 1 for first run; increments on retest (202 App J5.1c)
-  retestOf: Ref?                 // of: VerificationActivity — the failed run this retests
+  retestOf: Ref?                 // of: VerificationActivity — the failed or deferred run this retests
   testConditions: Str?           // ambient conditions, setpoints, overrides in effect (G0 7.2.10.1e)
   deferred: Marker?              // deferred to a later date or season (202 section 16.2.2)
   seasonal: Marker?              // requires a specific season, e.g. peak cooling
@@ -360,7 +360,7 @@ VerificationResult: Dict {
   evalEnd: DateTime?           // performance plane: end of the evaluated window; evalSpan stays the human label
   actualVal: Obj?              // observed value at check time
   adherencePct: Number?        // performance plane: percent of span within criteria
-  coveragePct: Number?         // performance plane: percent of the window with usable data; adherencePct is over that share
+  coveragePct: Number?         // performance plane: percent of the unsuspended window with usable data; adherencePct is over that share
   evidenceRef: Ref?            // supporting artifact: trend export, photo, report
   witnessRef: Ref?             // of: Attestation — witness signoff (202 App J5.1c)
   notes: Str?

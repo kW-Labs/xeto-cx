@@ -270,8 +270,8 @@ PerformanceCriterion: Dict {
 //
 // A record naming logicOutput grades that output. A record with no
 // logicOutput holds defaults only and is never graded. Per requirement and
-// logic lineage there is at most one defaults record and at most one
-// record per logicOutput; more is an invalid set and every output is
+// logic lineage there is at most one non-superseded defaults record and at
+// most one non-superseded record per logicOutput; more is an invalid set and every output is
 // inconclusive. A per-output record's set slots override the defaults
 // record's, slot by slot; an unset slot falls back to the defaults record,
 // then to the built-in default: 0 for every tolerance (funnel's own

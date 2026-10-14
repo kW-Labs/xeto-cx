@@ -428,7 +428,9 @@
 
 // Supply fan control, which carries the duct static pressure setpoint reset.
 // Section id as the Modelica Buildings Library 12.1.0 documentation of the
-// multiple-zone VAV controller cites it, at the third level.
+// multiple-zone VAV controller cites it, at the third level. That
+// documentation cites the May 2020 edition of the guideline, not 2024; the
+// id is illustrative until confirmed against the 2024 text.
 @ex-seq-dsp: SequenceSection {
   sourceRef: @ex-seq-g36
   sectionId: "5.16.1"
@@ -608,7 +610,7 @@
 @ex-seq-replay-trends: ActivityPrerequisite {
   activityRef: @ex-seq-replay-jul
   prereqSystemOperational
-  description: "Interval trends at 60 s or faster for outdoor air temperature, fan status, operation mode, zone cooling requests and the SAT setpoint"
+  description: "Interval trends at 60 s or faster for every input of the logic (including outdoor air temperature, supply fan status, operation mode, zone cooling requests and duct static pressure) and for the SAT setpoint output"
 }
 
 @ex-vr-replay-jul: VerificationResult {

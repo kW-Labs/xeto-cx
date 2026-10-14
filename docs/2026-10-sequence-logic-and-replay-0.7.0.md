@@ -176,7 +176,10 @@ From 0.7.0, **each owed value of a sequence with no executable logic is
 tracked as a `CxIssue`** until a logic exists for it. The promise that
 owed setpoints are tracked as open items still holds, for every sequence:
 as a placeholder `SequenceLogicParam` where there is a logic, and as a
-`CxIssue` where there is not.
+`CxIssue` where there is not. Such an issue names the fill-in through its
+existing slots: `sourceRef` to the `SequenceStatement` or `SequenceSection`
+that prints it, `assignedRole` the party who owes the value, and
+`requirementRef` the requirement it serves, when there is one.
 
 A drawing-only sequence cannot be replayed until a logic exists for it. It
 is verified as before: functional test steps generated from its
@@ -221,13 +224,14 @@ holds.
 
 **Ongoing Cx.** `VerificationActivity.cxProjectRef` is required, so an
 ongoing-Cx replay is filed under the `CxProject` whose requirements it
-verifies. Relaxing that for a facility with no `CxProject` at all is a
-separate change.
+verifies. A facility with no `CxProject` at all cannot record a replay
+until that anchor is relaxed, which is a separate change.
 
 **Status rollup.** `activityPassed` when every graded result passed,
 `activityFailed` when any failed, otherwise `activityDeferred`: the proof
 waits for data, and the re-run is a new activity with `retestOf`.
-`CxActivityStatus` has no inconclusive member.
+`CxActivityStatus` has no inconclusive member; issue #15 is where one would
+go.
 
 **Which parameters.** The acceptance replay runs on the evidenced design
 values (`designParamSource`), proving the building against the design. A
@@ -379,13 +383,20 @@ For example, a two-week window in which the supply fan was proven on for
 - **`logicUri`**, when set, is absolute. A project-relative path is not a
   `logicUri`.
 - **`paramSetHash`** is `"sha256:<hex>"` of lines `<logicParam>=<value>`,
-  one per parameter fed to the reference, value in Zinc scalar encoding
-  with its unit, sorted bytewise, UTF-8, LF-joined. The seed's July replay
-  shows one, computed over its two parameter values.
+  one per parameter fed to the reference, sorted bytewise, UTF-8,
+  LF-joined, with no trailing LF. The value is written as recorded, before
+  any conversion to the logic's units: in the `unit` of its
+  `SequenceLogicParam` record with `designParamSource`, or as read from
+  the controller with `controllerParamSource`. It is written in Zinc
+  scalar encoding with its unit, a number in its shortest round-trip
+  decimal form with no exponent and no trailing zeros (`65°F`, not
+  `65.0°F`). The seed's July replay shows one, computed over its two
+  parameter values.
 - **Criteria are immutable** once a result references them; a change
   writes a new `ReplayCriterion` with `supersedesRef`.
 - **`evidenceRef`** points at the evidence package: input, output and
-  indicator series and the parameter set as fed, in the converted units
+  indicator series in the converted units, and the parameter set as
+  hashed
   (the content of Scenario 2's `reference_input.csv`,
   `controller_output.csv`, `indicator.csv` and parameter file).
 
@@ -455,9 +466,10 @@ declarations of the `ph` family and every other library a 4.0.6 Xeto
 toolchain ships. None collides. A first draft's `output` collided with ph's
 `*output` marker and became `logicOutput`. Reused names keep their
 Haystack meaning on purpose: `equipRef` and `siteRef` are ph globals of
-type `Ref`, `systemRef` a `MultiRef` global, and `val` a global `Obj`; the
-family already used all four. `unit: Str?` against ph's `*unit: Unit` is a
-collision that predates 0.7.0 (`SequenceParam` and `PerformanceCriterion`
+type `Ref`, and `val` a global `Obj`. `systemRef` is a `MultiRef` global in
+ph, and the family declares it `Ref?`, the narrower single-ref case, as it
+already did on `VerificationActivity` and `CxIssue`. `unit: Str?` against
+ph's `*unit: Unit` is a collision that predates 0.7.0 (`SequenceParam` and `PerformanceCriterion`
 already declared it) and is recorded here rather than fixed in this
 release.
 
