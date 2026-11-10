@@ -22,11 +22,12 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Install Haxall 4.0.5
+      - name: Install Haxall 4.0.7
         run: |
-          curl -fsSL -o haxall.zip https://github.com/haxall/haxall/releases/download/v4.0.5/haxall-4.0.5.zip
+          curl -fsSL -o haxall.zip https://github.com/haxall/haxall/releases/download/v4.0.7/haxall-4.0.7.zip
+          echo "18962ca323a37a8b88f64b6daf8be4dfff34517871787564498abc5a535929b7  haxall.zip" | sha256sum -c -
           unzip -q haxall.zip
-          mv haxall-4.0.5 haxall
+          mv haxall-4.0.7 haxall
           chmod -R +x haxall/bin
 
       - name: Copy libs into haxall/src/xeto
@@ -43,7 +44,8 @@ jobs:
         run: |
           export PATH="${{ github.workspace }}/haxall/bin:$PATH"
           xeto build cx cx.requirements cx.verification cx.issues cx.measures cx.sequences cx.content 2>&1 | tee build.log
-          if grep -q "^ERROR:" build.log; then
+          # xeto build can exit 0 on compile errors, so check its output.
+          if grep -qE 'ERROR|Failed \[' build.log || ! grep -q 'Success \[' build.log; then
             echo "::error::xeto build reported errors"
             exit 1
           fi
@@ -52,7 +54,8 @@ jobs:
         run: |
           MISSING=""
           for lib in cx cx.requirements cx.verification cx.issues cx.measures cx.sequences cx.content; do
-            if ! ls haxall/lib/xeto/$lib/$lib-*.xetolib 1>/dev/null 2>&1; then
+            # 4.0.7 writes flat, unversioned lib/xeto/<lib>.xetolib
+            if [ ! -f "haxall/lib/xeto/$lib.xetolib" ]; then
               MISSING="$MISSING $lib"
             fi
           done
@@ -66,5 +69,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: xetolibs
-          path: haxall/lib/xeto/cx*/*.xetolib
+          path: haxall/lib/xeto/cx*.xetolib
           if-no-files-found: error
